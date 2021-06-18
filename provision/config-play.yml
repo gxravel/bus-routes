@@ -1,0 +1,20 @@
+---
+- name: config template
+  hosts: all
+
+  tasks:
+  - name: define vars for localhost
+    set_fact:
+      config_name: "../config.example.json"
+      config_backup: no
+    when:
+    - inventory_hostname == "localhost"
+
+  - debug: var=config_name
+  - debug: var=config_backup
+
+  - name: generating configuration from template
+    copy:
+      content: "{{ lookup('template', 'templates/config.template.j2') | from_yaml | to_nice_json }}"
+      dest: "{{ config_name }}"
+      backup: "{{ config_backup }}"

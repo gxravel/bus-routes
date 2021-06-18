@@ -1,0 +1,19 @@
+config:
+  environment: develop
+  shutdown_timeout: 10s
+
+  logger:
+    level: debug
+    format: json
+
+  db:
+    url: root:root@tcp(localhost:3308)/bus-routes
+    schema_name: bus-routes
+    max_open_conns: 2
+    max_idle_conns: 10
+
+  api:
+    serve_swagger: false
+    address: ":4000"
+    read_timeout: 30s
+    write_timeout: 30s

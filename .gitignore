@@ -4,11 +4,10 @@
 
 ### Go ###
 # Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+gobin/
+bin/
+
+config.example.json
 
 # Test binary, built with `go test -c`
 *.test

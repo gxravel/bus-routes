@@ -1,0 +1,19 @@
+environment: {{ config.environment }} # production|development
+shutdown_timeout: {{ config.shutdown_timeout }} # default: 10s
+
+logger:
+    level: {{ config.logger.level }} # default: info
+    format: {{ config.logger.format }} # console | json | text
+
+db:
+    url: {{ config.db.url }}
+    schema_name: {{ config.db.schema_name }}
+    max_open_conns: {{ config.db.max_open_conns }} # default: 2
+    max_idle_conns: {{ config.db.max_idle_conns }} # default: 10
+
+api:
+    serve_swagger: {{ config.api.serve_swagger }} # default: false
+    # serve /version
+    address: {{ config.api.address }} # default: ":4000"
+    read_timeout: {{ config.api.read_timeout }} # default: 5s
+    write_timeout: {{ config.api.write_timeout }} # default: 5s
