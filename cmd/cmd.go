@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	log "github.com/gxravel/bus-routes/internal/logger"
+)
 
 func main() {
+	defaultLog := log.Default()
+
 	fmt.Println("starting here")
 }
