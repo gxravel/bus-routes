@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
@@ -27,6 +28,11 @@ func main() {
 		defaultLog.WithErr(err).Error("can not init log with specified params, defaults are used")
 		log = defaultLog
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	logger.CtxWithLogger(ctx, log)
 
 	fmt.Println("starting here")
 }
