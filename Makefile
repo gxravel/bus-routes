@@ -38,3 +38,11 @@ gen.config:
 gen.config.local: ENV=local
 gen.config.local: gen.config
 .PHONY: gen.config.local
+
+git.co:
+	git checkout feature/FAT-15806/working-with-$(ph)
+.PHONY: git.co
+
+git.con:
+	git checkout -b feature/FAT-15806/working-with-$(ph)
+.PHONY: git.con

@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/gxravel/bus-routes/internal/config"
-	log "github.com/gxravel/bus-routes/internal/logger"
+	"github.com/gxravel/bus-routes/internal/logger"
 )
 
 func main() {
-	defaultLog := log.Default()
+	defaultLog := logger.Default()
 
 	var configPath = flag.String("config", "./config.example.json", "path to configuration file")
 
@@ -18,6 +18,14 @@ func main() {
 	cfg, err := config.New(*configPath)
 	if err != nil {
 		defaultLog.WithErr(err).Fatal("can't create config")
+	}
+
+	log, err := logger.New(
+		cfg.Log.Level,
+		logger.DefaultOutput)
+	if err != nil {
+		defaultLog.WithErr(err).Error("can not init log with specified params, defaults are used")
+		log = defaultLog
 	}
 
 	fmt.Println("starting here")
