@@ -46,3 +46,6 @@ git.co:
 git.con:
 	git checkout -b feature/FAT-15806/working-with-$(ph)
 .PHONY: git.con
+
+migration:
+	go run ./scripts/migration_gen/migration_gen.go -name=$(name)

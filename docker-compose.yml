@@ -1,0 +1,19 @@
+version: "3.9"
+    
+services:
+  db:
+    image: mysql
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bus_routes
+      MYSQL_USER: gxravel
+      MYSQL_PASSWORD: gxravel
+    ports:
+      - 3308:3306
+    
+volumes:
+  db_data: {}
+

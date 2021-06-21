@@ -7,7 +7,8 @@ config:
     format: json
 
   db:
-    url: root:root@tcp(localhost:3308)/bus-routes
+    url: gxravel:gxravel@tcp(localhost:3308)
+    schema_name: bus_routes
     max_open_conns: 2
     max_idle_conns: 2
 

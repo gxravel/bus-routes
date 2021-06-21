@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 
 	"github.com/gxravel/bus-routes/internal/config"
+	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/logger"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -34,5 +36,20 @@ func main() {
 
 	logger.CtxWithLogger(ctx, log)
 
-	fmt.Println("starting here")
+	db, err := database.NewClient(*cfg, log)
+	if err != nil {
+		log.WithErr(err).Fatal("constructing database")
+	}
+
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			log.WithErr(err).Error("closing database connection")
+		}
+	}()
+
+	if err := db.Migrate(); err != nil {
+		log.WithErr(err).Fatal("can't migrate the db")
+	}
+
 }

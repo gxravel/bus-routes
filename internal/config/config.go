@@ -28,6 +28,7 @@ type api struct {
 
 type DB struct {
 	URL          string `mapstructure:"url"`
+	SchemaName   string `mapstructure:"schema_name"`
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 }
@@ -41,7 +42,8 @@ var defaults = map[string]interface{}{
 	"environment":      "development",
 	"shutdown_timeout": time.Second * 5,
 
-	"db.url":            "root:root@tcp(localhost:3308)/bus-routes",
+	"db.url":            "gxravel:gxravel@tcp(localhost:3308)",
+	"db.schema_name":    "bus_routes",
 	"db.max_open_conns": 2,
 	"db.max_idle_conns": 2,
 
