@@ -3,7 +3,11 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 
+	"github.com/gxravel/bus-routes/internal/api/http/handler"
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/database"
@@ -57,12 +61,56 @@ func main() {
 	txer := mysql.NewTxManager(db)
 	busStore := mysql.NewBusStore(db, txer)
 
-	busRoutes := busroutes.New(
+	busroutes := busroutes.New(
 		cfg,
 		db,
 		log,
 		busStore,
 		txer,
 	)
+
+	apiServer := handler.NewServer(
+		cfg,
+		busroutes,
+		log,
+	)
+
+	var (
+		shutdown     = make(chan os.Signal, 1)
+		serverErrors = make(chan error, 1)
+	)
+
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		serverErrors <- apiServer.ListenAndServe()
+	}()
+
+	log.WithFields(
+		"pid", os.Getpid(),
+		"cfg", cfg,
+	).Info("started")
+
+	defer log.Info("stopped")
+
+	select {
+	case err = <-serverErrors:
+		log.WithErr(err).Error("api server stopped")
+
+	case sig := <-shutdown:
+		log.WithField("signal", sig.String()).Info("gracefully shutdown application")
+
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+		defer cancel()
+
+		if err = apiServer.Shutdown(ctx); err != nil {
+			log.WithErr(err).Error("api server shutdown error")
+			err = apiServer.Close()
+		}
+
+		if err != nil {
+			log.WithErr(err).Error("could not stopped api server gracefully")
+		}
+	}
 
 }
