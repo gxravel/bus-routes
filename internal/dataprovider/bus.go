@@ -13,7 +13,9 @@ type BusStore interface {
 }
 
 type BusFilter struct {
-	IDs []int64
+	IDs    []int64
+	Cities []string
+	Nums   []string
 }
 
 func NewBusFilter() *BusFilter {
@@ -22,5 +24,15 @@ func NewBusFilter() *BusFilter {
 
 func (f *BusFilter) ByIDs(ids ...int64) *BusFilter {
 	f.IDs = ids
+	return f
+}
+
+func (f *BusFilter) ByCities(cities ...string) *BusFilter {
+	f.Cities = cities
+	return f
+}
+
+func (f *BusFilter) ByNums(nums ...string) *BusFilter {
+	f.Nums = nums
 	return f
 }
