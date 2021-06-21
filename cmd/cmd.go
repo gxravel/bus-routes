@@ -6,6 +6,7 @@ import (
 
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/database"
+	"github.com/gxravel/bus-routes/internal/dataprovider/mysql"
 	"github.com/gxravel/bus-routes/internal/logger"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -51,5 +52,7 @@ func main() {
 	if err := db.Migrate(); err != nil {
 		log.WithErr(err).Fatal("can't migrate the db")
 	}
+
+	txer := mysql.NewTxManager(db)
 
 }
