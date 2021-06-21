@@ -13,9 +13,10 @@ type BusStore interface {
 }
 
 type BusFilter struct {
-	IDs    []int64
-	Cities []string
-	Nums   []string
+	IDs       []int64
+	Cities    []string
+	Nums      []string
+	Paginator *Paginator
 }
 
 func NewBusFilter() *BusFilter {
@@ -34,5 +35,11 @@ func (f *BusFilter) ByCities(cities ...string) *BusFilter {
 
 func (f *BusFilter) ByNums(nums ...string) *BusFilter {
 	f.Nums = nums
+	return f
+}
+
+// WithPaginator adds pagination to filter.
+func (f *BusFilter) WithPaginator(paginator *Paginator) *BusFilter {
+	f.Paginator = paginator
 	return f
 }

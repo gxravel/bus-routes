@@ -51,6 +51,28 @@ paths:
         items:
           type: integer
         required: false
+      - name: cities
+        description: Города интересующих автобусов
+        in: query
+        type: array
+        items:
+          type: string
+        required: false
+      - name: nums
+        description: Номера автобусов
+        in: query
+        type: array
+        items:
+          type: string
+        required: false
+      - name: limit
+        in: query
+        description: Пейджинг - выводить N первых автобусов (по умолчанию 20)
+        type: integer
+      - name: offset
+        in: query
+        description: Пейджинг - пропустить N первых автобусов
+        type: integer
     get:
       summary: Получение списка действующих автобусов
       tags:

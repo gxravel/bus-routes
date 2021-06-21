@@ -67,12 +67,17 @@ func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter)
 func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFilter) ([]*model.Bus, error) {
 	qb := sq.
 		Select(
-			"id",
-			"city_id",
+			"bus.id",
+			"city.name",
 			"num",
 		).
 		From(s.tableName).
+		InnerJoin("city on bus.city_id=city.id").
 		Where(busCond(filter))
+
+	if filter.Paginator != nil {
+		qb = withPaginator(qb, filter.Paginator)
+	}
 
 	query, args, err := qb.ToSql()
 	if err != nil {
