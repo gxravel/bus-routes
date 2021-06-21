@@ -3,6 +3,7 @@ module github.com/gxravel/bus-routes
 go 1.16
 
 require (
+	github.com/Masterminds/squirrel v1.5.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-swagger/go-swagger v0.27.0
 	github.com/golangci/golangci-lint v1.41.0

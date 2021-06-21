@@ -54,5 +54,5 @@ func main() {
 	}
 
 	txer := mysql.NewTxManager(db)
-
+	busStore := mysql.NewBusStore(db, txer)
 }
