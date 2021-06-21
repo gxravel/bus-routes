@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 
+	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/dataprovider/mysql"
@@ -55,4 +56,13 @@ func main() {
 
 	txer := mysql.NewTxManager(db)
 	busStore := mysql.NewBusStore(db, txer)
+
+	busRoutes := busroutes.New(
+		cfg,
+		db,
+		log,
+		busStore,
+		txer,
+	)
+
 }
