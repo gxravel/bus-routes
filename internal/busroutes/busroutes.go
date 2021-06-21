@@ -1,8 +1,6 @@
 package busroutes
 
 import (
-	"context"
-
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
@@ -31,8 +29,4 @@ func New(
 		busStore: busStore,
 		txer:     txer,
 	}
-}
-
-func (r *BusRoutes) IsHealthy(ctx context.Context) error {
-	return r.db.StatusCheck(ctx)
 }

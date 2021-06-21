@@ -14,3 +14,7 @@ func (r *BusRoutes) GetBuses(ctx context.Context, busFilter *dataprovider.BusFil
 	}
 	return dbBuses, nil
 }
+
+func (r *BusRoutes) IsHealthy(ctx context.Context) error {
+	return r.db.StatusCheck(ctx)
+}

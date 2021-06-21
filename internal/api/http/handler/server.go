@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/gxravel/bus-routes/assets"
 	mw "github.com/gxravel/bus-routes/internal/api/http/middleware"
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
@@ -36,6 +37,14 @@ func NewServer(
 	r.Use(mw.Logger(srv.logger))
 	r.Use(mw.Recoverer)
 
+	if cfg.API.ServeSwagger {
+		registerSwagger(r)
+	}
+
+	r.Route("/internal", func(r chi.Router) {
+		r.Get("/health", srv.getHealth)
+	})
+
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/buses", func(r chi.Router) {
@@ -47,4 +56,13 @@ func NewServer(
 	srv.Handler = r
 
 	return srv
+}
+
+func registerSwagger(r *chi.Mux) {
+	r.HandleFunc("/internal/swagger", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/internal/swagger/", http.StatusFound)
+	})
+
+	swaggerHandler := http.StripPrefix("/internal/", http.FileServer(http.FS(assets.SwaggerFiles)))
+	r.Get("/internal/swagger/*", swaggerHandler.ServeHTTP)
 }

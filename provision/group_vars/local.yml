@@ -13,7 +13,7 @@ config:
     max_idle_conns: 2
 
   api:
-    serve_swagger: false
+    serve_swagger: true
     address: ":8090"
     read_timeout: 5s
     write_timeout: 5s

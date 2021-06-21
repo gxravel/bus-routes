@@ -1,0 +1,66 @@
+swagger: "2.0"
+
+info:
+  title: busroutes
+  version: 0.0.1
+
+schemes:
+  - http
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
+
+definitions:
+  Bus:
+    properties:
+      id:
+        description: Идентификатор автобуса
+        type: integer
+        example: 111
+      city:
+        description: Название города
+        type: string
+        example: Казань
+      num:
+        description: Номер автобуса
+        type: string
+        example: 35А
+
+tags:
+  - name: api
+    description: Bus Routes API
+
+paths:
+  /internal/health:
+    get:
+      responses:
+        "200":
+          description: Success
+        "500":
+          description: Internal Server Error
+      summary: Health
+  /api/v1/buses:
+    parameters:
+      - name: ids
+        description: Идентификаторы автобусов
+        in: query
+        type: array
+        items:
+          type: integer
+        required: false
+    get:
+      summary: Получение списка действующих автобусов
+      tags:
+        - api
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Bus"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
