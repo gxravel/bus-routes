@@ -23,7 +23,11 @@ type Logger interface {
 	Error(msg string)
 	Fatal(msg string)
 
+	WithField(name string, value interface{}) Logger
+	WithFields(pairs ...interface{}) Logger
+
 	WithErr(err error) Logger
+	WithStr(key string, val string) Logger
 }
 
 const (
@@ -111,8 +115,35 @@ func (zl *logger) Fatalf(format string, args ...interface{}) {
 	zl.Logger.Fatal().Msgf(format, args...)
 }
 
+// WithField implements WithField method for logger.
+func (zl *logger) WithField(name string, value interface{}) Logger {
+	var outzl = zl.With().Interface(name, value).Logger()
+	return &logger{Logger: &outzl}
+}
+
+// WithFields implements WithFields method for logger.
+func (zl *logger) WithFields(pairs ...interface{}) Logger {
+	var n = len(pairs)
+	if n%2 != 0 {
+		pairs = append(pairs, "")
+	}
+
+	var outzl = *zl.Logger
+	for i := 0; i < n; i += 2 {
+		outzl = outzl.With().Interface(fmt.Sprint(pairs[i]), pairs[i+1]).Logger()
+	}
+
+	return &logger{Logger: &outzl}
+}
+
 // WithErr implements WithErr method for logger.
 func (zl *logger) WithErr(err error) Logger {
 	var outzl = zl.With().Str(logFieldErr, err.Error()).Logger()
+	return &logger{Logger: &outzl}
+}
+
+// WithStr implements WithStr method for logger.
+func (zl *logger) WithStr(key string, val string) Logger {
+	var outzl = zl.With().Str(key, val).Logger()
 	return &logger{Logger: &outzl}
 }
