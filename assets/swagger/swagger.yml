@@ -28,60 +28,165 @@ definitions:
         description: Номер автобуса
         type: string
         example: 35А
+  BusNoID:
+    properties:
+      city:
+        description: Название города
+        type: string
+        example: Казань
+      num:
+        description: Номер автобуса
+        type: string
+        example: 35А
+  City:
+    properties:
+      id:
+        description: Идентификатор города
+        type: integer
+        example: 50
+      name:
+        description: Название города
+        type: string
+        example: Казань
+
+  # ArrayOfInt:
+  #   type: array
+  #   items:
+  #     type: integer
+  #     format: int64
+  #   example: [1, 2, 3]
 
 tags:
   - name: api
     description: Bus Routes API
+  - name: buses
+    description: all about buses
+  - name: cities
+    description: all about cities
 
 paths:
   /internal/health:
     get:
-      responses:
-        "200":
-          description: Success
-        "500":
-          description: Internal Server Error
       summary: Health
-  /api/v1/buses:
-    parameters:
-      - name: ids
-        description: Идентификаторы автобусов
-        in: query
-        type: array
-        items:
-          type: integer
-        required: false
-      - name: cities
-        description: Города интересующих автобусов
-        in: query
-        type: array
-        items:
-          type: string
-        required: false
-      - name: nums
-        description: Номера автобусов
-        in: query
-        type: array
-        items:
-          type: string
-        required: false
-      - name: limit
-        in: query
-        description: Пейджинг - выводить N первых автобусов (по умолчанию 20)
-        type: integer
-      - name: offset
-        in: query
-        description: Пейджинг - пропустить N первых автобусов
-        type: integer
-    get:
-      summary: Получение списка действующих автобусов
       tags:
         - api
       responses:
         "200":
           description: Success
+        "500":
+          description: Internal Server Error
+  /api/v1/buses:
+    get:
+      summary: Получение списка действующих автобусов
+      tags:
+        - buses
+      parameters:
+        - name: ids
+          description: Идентификаторы автобусов
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+        - name: cities
+          description: Города интересующих автобусов
+          in: query
+          type: array
+          items:
+            type: string
+          required: false
+        - name: nums
+          description: Номера автобусов
+          in: query
+          type: array
+          items:
+            type: string
+          required: false
+        - name: limit
+          in: query
+          description: Пейджинг - выводить N первых автобусов (по умолчанию 20)
+          type: integer
+        - name: offset
+          in: query
+          description: Пейджинг - пропустить N первых автобусов
+          type: integer
+      responses:
+        "200":
+          description: Success
           schema:
             $ref: "#/definitions/Bus"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Добавление новых автобусов
+      tags:
+        - buses
+      parameters:
+        - name: buses
+          in: body
+          description: Автобусы
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/BusNoID"
+            example: [{ city: Москва, num: "11" }, { city: Москва, num: "15" }]
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  
+  /api/v1/cities:
+    get:
+      summary: Получение списка городов
+      tags:
+        - cities
+      parameters:
+        - name: ids
+          description: Идентификаторы городов
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+        - name: names
+          description: Названия городов
+          in: query
+          type: array
+          items:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/City"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Добавление новых городов
+      tags:
+        - cities
+      parameters:
+        - name: cities
+          in: body
+          description: Города
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            example: [ Москва, Казань, Ижевск ]
+      responses:
+        "201":
+          description: Created
         "400":
           description: Bad request
         "500":

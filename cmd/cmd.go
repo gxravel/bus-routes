@@ -60,12 +60,14 @@ func main() {
 
 	txer := mysql.NewTxManager(db)
 	busStore := mysql.NewBusStore(db, txer)
+	cityStore := mysql.NewCityStore(db, txer)
 
 	busroutes := busroutes.New(
 		cfg,
 		db,
 		log,
 		busStore,
+		cityStore,
 		txer,
 	)
 

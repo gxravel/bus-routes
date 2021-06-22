@@ -97,6 +97,19 @@ func ParseQueryInt64Slice(r *http.Request, field string) ([]int64, error) {
 	return vals, nil
 }
 
+func ParseQueryIntSlice(r *http.Request, field string) ([]int, error) {
+	i64, err := ParseQueryInt64Slice(r, field)
+	if err != nil {
+		return nil, err
+	}
+	var result = make([]int, 0, len(i64))
+	for _, i := range i64 {
+		result = append(result, int(i))
+	}
+
+	return result, nil
+}
+
 // ParseBusFilter returns filter to buses store depending on client's type.
 func ParseBusFilter(r *http.Request) (*dataprovider.BusFilter, error) {
 	ids, err := ParseQueryInt64Slice(r, "ids")
@@ -116,5 +129,21 @@ func ParseBusFilter(r *http.Request) (*dataprovider.BusFilter, error) {
 
 	return dataprovider.NewBusFilter().
 		ByIDs(ids...).ByCities(cities...).ByNums(nums...), nil
+
+}
+
+func ParseCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
+	ids, err := ParseQueryIntSlice(r, "ids")
+	if err != nil {
+		return nil, err
+	}
+
+	names, err := ParseQueryParams(r, "names")
+	if err != nil {
+		return nil, err
+	}
+
+	return dataprovider.NewCityFilter().
+		ByIDs(ids...).ByNames(names...), nil
 
 }

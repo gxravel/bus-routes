@@ -26,7 +26,7 @@ func EndTransaction(tx *Tx, logger logger.Logger, err error) error {
 		return nil
 	}
 
-	logger.Debug("rolling back transaction")
+	logger.WithErr(err).Debug("rolling back transaction")
 	if rerr := tx.Rollback(); rerr != nil {
 		logger.WithErr(rerr).Error("can't roll back transaction")
 	}

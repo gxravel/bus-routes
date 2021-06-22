@@ -43,7 +43,13 @@ func busCond(f *dataprovider.BusFilter) sq.Sqlizer {
 	var cond sq.Sqlizer = eq
 
 	if len(f.IDs) > 0 {
-		eq["id"] = f.IDs
+		eq["bus.id"] = f.IDs
+	}
+	if len(f.Cities) > 0 {
+		eq["city"] = f.Cities
+	}
+	if len(f.Nums) > 0 {
+		eq["num"] = f.Nums
 	}
 
 	return cond
@@ -68,7 +74,7 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 	qb := sq.
 		Select(
 			"bus.id",
-			"city.name",
+			"city.name as city",
 			"num",
 		).
 		From(s.tableName).
@@ -99,4 +105,61 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 	}
 
 	return buses, nil
+}
+
+func (s *BusStore) New(ctx context.Context, buses ...*model.Bus) error {
+	if len(buses) == 0 {
+		return nil
+	}
+
+	var citiesIDs = make(map[string]int, len(buses))
+	for _, bus := range buses {
+		citiesIDs[bus.City] = -1
+	}
+
+	var names = make([]string, 0, len(citiesIDs))
+	for name := range citiesIDs {
+		names = append(names, name)
+	}
+
+	f := func(tx *dataprovider.Tx) error {
+		cityStore := NewCityStore(s.db, s.txer).WithTx(tx)
+		cityFilter := dataprovider.NewCityFilter().ByNames(names...)
+		cities, err := cityStore.ListByFilter(ctx, cityFilter)
+		if err != nil {
+			return errors.Wrap(err, "getting cities from city store")
+		}
+		if len(cities) == 0 {
+			return errors.New("found no city")
+		}
+		for _, city := range cities {
+			citiesIDs[city.Name] = city.ID
+		}
+
+		ib := sq.Insert("bus").Columns("city_id", "num")
+		for _, bus := range buses {
+			ib = ib.Values(citiesIDs[bus.City], bus.Num)
+		}
+
+		query, args, err := ib.ToSql()
+		if err != nil {
+			return errors.Wrap(err, "creating sql query for inserting buses")
+		}
+
+		s.logger(ctx).
+			WithFields(
+				"query", query,
+				"args", args).
+			Debug("inserting buses")
+
+		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+			if err == sql.ErrNoRows {
+				return nil
+			}
+			return errors.Wrapf(err, "inserting buses with query %s", query)
+		}
+		return nil
+	}
+
+	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
 }

@@ -10,6 +10,7 @@ type BusStore interface {
 	WithTx(*Tx) BusStore
 	ByFilter(ctx context.Context, filter *BusFilter) (*model.Bus, error)
 	ListByFilter(ctx context.Context, filter *BusFilter) ([]*model.Bus, error)
+	New(ctx context.Context, buses ...*model.Bus) error
 }
 
 type BusFilter struct {

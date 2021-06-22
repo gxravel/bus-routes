@@ -8,11 +8,12 @@ import (
 )
 
 type BusRoutes struct {
-	config   *config.Config
-	db       *database.Client
-	logger   logger.Logger
-	busStore dataprovider.BusStore
-	txer     dataprovider.Txer
+	config    *config.Config
+	db        *database.Client
+	logger    logger.Logger
+	busStore  dataprovider.BusStore
+	cityStore dataprovider.CityStore
+	txer      dataprovider.Txer
 }
 
 func New(
@@ -20,13 +21,15 @@ func New(
 	db *database.Client,
 	logger logger.Logger,
 	busStore dataprovider.BusStore,
+	cityStore dataprovider.CityStore,
 	txer dataprovider.Txer,
 ) *BusRoutes {
 	return &BusRoutes{
-		config:   config,
-		db:       db,
-		logger:   logger,
-		busStore: busStore,
-		txer:     txer,
+		config:    config,
+		db:        db,
+		logger:    logger,
+		busStore:  busStore,
+		cityStore: cityStore,
+		txer:      txer,
 	}
 }

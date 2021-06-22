@@ -17,7 +17,7 @@ run: check build
 	$(OUT) -config ./config.example.json
 .PHONY: run
 
-check: lint
+check: check.swagger lint
 .PHONY: check
 
 lint:

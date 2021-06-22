@@ -15,7 +15,7 @@ func migrationInit(schema string) *migrator.Migration {
 			qs := []string{
 				`CREATE TABLE IF NOT EXISTS city (
 					id INT AUTO_INCREMENT PRIMARY KEY,
-					name VARCHAR(255) NOT NULL
+					name VARCHAR(255) NOT NULL UNIQUE
 				)`,
 				`CREATE TABLE IF NOT EXISTS bus (
 					id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -54,5 +54,8 @@ func migrationInit(schema string) *migrator.Migration {
 }
 
 /* ROLLBACK SQL
-
- */
+DROP TABLE IF EXISTS city;
+DROP TABLE IF EXISTS bus;
+DROP TABLE IF EXISTS stop;
+DROP TABLE IF EXISTS route;
+*/

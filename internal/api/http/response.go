@@ -19,8 +19,12 @@ type RangeItemsResponse struct {
 }
 
 type Response struct {
-	Data  interface{} `json:"data"`
-	Error interface{} `json:"error"`
+	Data  interface{} `json:"data,omitempty"`
+	Error *Error      `json:"error,omitempty"`
+}
+
+type Error struct {
+	Msg string `json:"msg"`
 }
 
 func RespondJSON(ctx context.Context, w http.ResponseWriter, code int, data interface{}) {
@@ -41,6 +45,14 @@ func RespondEmpty(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func RespondCreated(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusCreated)
+}
+
+func RespondNoContent(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // RespondDataOK responds with 200 status code and JSON in format: {"data": <val>}.
 func RespondDataOK(ctx context.Context, w http.ResponseWriter, val interface{}) {
 	RespondData(ctx, w, http.StatusOK, val)
@@ -55,6 +67,6 @@ func RespondData(ctx context.Context, w http.ResponseWriter, code int, val inter
 
 func RespondError(ctx context.Context, w http.ResponseWriter, code int, err error) {
 	RespondJSON(ctx, w, code, &Response{
-		Error: err,
+		Error: &Error{Msg: err.Error()},
 	})
 }

@@ -47,8 +47,13 @@ func NewServer(
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
+			r.Route("/cities", func(r chi.Router) {
+				r.Get("/", srv.getCities)
+				r.Post("/", srv.postCities)
+			})
 			r.Route("/buses", func(r chi.Router) {
 				r.Get("/", srv.getBuses)
+				r.Post("/", srv.postBuses)
 			})
 		})
 	})
