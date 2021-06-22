@@ -50,6 +50,8 @@ func NewServer(
 			r.Route("/cities", func(r chi.Router) {
 				r.Get("/", srv.getCities)
 				r.Post("/", srv.postCities)
+				r.Put("/", srv.putCity)
+				r.Delete("/", srv.deleteCity)
 			})
 			r.Route("/buses", func(r chi.Router) {
 				r.Get("/", srv.getBuses)

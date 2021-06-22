@@ -48,13 +48,12 @@ definitions:
         description: Название города
         type: string
         example: Казань
-
-  # ArrayOfInt:
-  #   type: array
-  #   items:
-  #     type: integer
-  #     format: int64
-  #   example: [1, 2, 3]
+  CityNoID:
+    properties:
+      name:
+        description: Название города
+        type: string
+        example: Казань
 
 tags:
   - name: api
@@ -140,7 +139,7 @@ paths:
           description: Bad request
         "500":
           description: Internal server error
-  
+
   /api/v1/cities:
     get:
       summary: Получение списка городов
@@ -176,17 +175,58 @@ paths:
         - cities
       parameters:
         - name: cities
-          in: body
           description: Города
+          in: body
           required: true
           schema:
             type: array
             items:
-              type: string
-            example: [ Москва, Казань, Ижевск ]
+              $ref: "#/definitions/CityNoID"
+            example: [{ name: Москва }, { name: Казань }, { name: Ижевск }]
       responses:
         "201":
           description: Created
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    put:
+      summary: Редактирование города
+      tags:
+        - cities
+      parameters:
+        - name: city
+          description: Город
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/City"
+            example: { id: 1, name: Калуга }
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    delete:
+      summary: Удаление города
+      tags:
+        - cities
+      parameters:
+        - name: id
+          description: Идентификатор города
+          in: query
+          type: integer
+          required: false
+        - name: name
+          description: Название города
+          in: query
+          type: string
+          required: false
+      responses:
+        "204":
+          description: No Content
         "400":
           description: Bad request
         "500":

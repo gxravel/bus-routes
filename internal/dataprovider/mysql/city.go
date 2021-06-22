@@ -98,17 +98,13 @@ func (s *CityStore) ListByFilter(ctx context.Context, filter *dataprovider.CityF
 	return cities, nil
 }
 
-func (s *CityStore) New(ctx context.Context, names ...string) error {
-	if len(names) == 0 {
-		return nil
+func (s *CityStore) New(ctx context.Context, cities ...*model.City) error {
+	qb := sq.Insert(s.tableName).Columns("name")
+	for _, city := range cities {
+		qb = qb.Values(city.Name)
 	}
 
-	ib := sq.Insert("city").Columns("name")
-	for _, name := range names {
-		ib = ib.Values(name)
-	}
-
-	query, args, err := ib.ToSql()
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "creating sql query for inserting cities")
 	}
@@ -118,12 +114,58 @@ func (s *CityStore) New(ctx context.Context, names ...string) error {
 			"query", query,
 			"args", args).
 		Debug("inserting cities")
+
 	f := func(tx *dataprovider.Tx) error {
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			if err == sql.ErrNoRows {
-				return nil
-			}
 			return errors.Wrapf(err, "inserting cities with query %s", query)
+		}
+		return nil
+	}
+
+	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
+}
+
+func (s *CityStore) Update(ctx context.Context, city *model.City) error {
+	qb := sq.Update(s.tableName).Set("name", city.Name).Where(sq.Eq{"id": city.ID})
+
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "creating sql query for updating city")
+	}
+
+	s.logger(ctx).
+		WithFields(
+			"query", query,
+			"args", args).
+		Debug("updating city")
+
+	f := func(tx *dataprovider.Tx) error {
+		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+			return errors.Wrapf(err, "updating city with query %s", query)
+		}
+		return nil
+	}
+
+	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
+}
+
+func (s *CityStore) Delete(ctx context.Context, filter *dataprovider.CityFilter) error {
+	qb := sq.Delete(s.tableName).Where(cityCond(filter))
+
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "creating sql query for deleting city")
+	}
+
+	s.logger(ctx).
+		WithFields(
+			"query", query,
+			"args", args).
+		Debug("deleting city")
+
+	f := func(tx *dataprovider.Tx) error {
+		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+			return errors.Wrapf(err, "deleting city with query %s", query)
 		}
 		return nil
 	}

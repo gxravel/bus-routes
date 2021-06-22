@@ -23,14 +23,14 @@ func migrationInit(schema string) *migrator.Migration {
 					-- num can be like '35A'.
 					num VARCHAR(255) NOT NULL,
 					UNIQUE(city_id, num),
-					FOREIGN KEY(city_id) REFERENCES city(id)
+					FOREIGN KEY(city_id) REFERENCES city(id) ON UPDATE CASCADE ON DELETE CASCADE
 				)`,
 				`CREATE TABLE IF NOT EXISTS stop (
 					id BIGINT AUTO_INCREMENT PRIMARY KEY,
 					city_id INT NOT NULL,
 					address VARCHAR(255) NOT NULL,
 					UNIQUE(city_id, address),
-					FOREIGN KEY(city_id) REFERENCES city(id)
+					FOREIGN KEY(city_id) REFERENCES city(id) ON UPDATE CASCADE ON DELETE CASCADE
 				)`,
 				`CREATE TABLE IF NOT EXISTS route (
 					bus_id BIGINT NOT NULL,
@@ -38,7 +38,7 @@ func migrationInit(schema string) *migrator.Migration {
 					-- step is the number of a bus stop in its route.
 					step TINYINT UNSIGNED NOT NULL,
 					PRIMARY KEY(bus_id, stop_id, step),
-					FOREIGN KEY(bus_id) REFERENCES bus(id) ON UPDATE CASCADE,
+					FOREIGN KEY(bus_id) REFERENCES bus(id) ON UPDATE CASCADE ON DELETE CASCADE,
 					FOREIGN KEY(stop_id) REFERENCES stop(id) ON UPDATE CASCADE
 				)`,
 			}

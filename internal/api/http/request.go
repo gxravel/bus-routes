@@ -27,6 +27,24 @@ func parseQueryUint64(r *http.Request, field string) (uint64, error) {
 	return iv, nil
 }
 
+func ParseQueryInt(r *http.Request, field string) (int, error) {
+	value, err := ParseQueryParam(r, field)
+	if err != nil {
+		return 0, err
+	}
+
+	if value == "" {
+		return 0, nil
+	}
+
+	i, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0, errors.Errorf("%v is not a int", value)
+	}
+
+	return int(i), nil
+}
+
 // ParseQueryParam parses query params for specific field.
 func ParseQueryParam(r *http.Request, field string) (string, error) {
 	q := r.URL.Query()
@@ -146,4 +164,19 @@ func ParseCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 	return dataprovider.NewCityFilter().
 		ByIDs(ids...).ByNames(names...), nil
 
+}
+
+func ParseDeleteCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
+	id, err := ParseQueryInt(r, "id")
+	if err != nil {
+		return nil, err
+	}
+
+	name, err := ParseQueryParam(r, "name")
+	if err != nil {
+		return nil, err
+	}
+
+	return dataprovider.NewCityFilter().
+		ByIDs(id).ByNames(name), nil
 }

@@ -98,9 +98,6 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 
 	buses := make([]*model.Bus, 0)
 	if err = sqlx.SelectContext(ctx, s.db, &buses, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return buses, nil
-		}
 		return nil, errors.Wrapf(err, "selecting buses by filter from database with query %s", query)
 	}
 
@@ -108,17 +105,13 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 }
 
 func (s *BusStore) New(ctx context.Context, buses ...*model.Bus) error {
-	if len(buses) == 0 {
-		return nil
-	}
-
-	var citiesIDs = make(map[string]int, len(buses))
+	var ids = make(map[string]int, len(buses))
 	for _, bus := range buses {
-		citiesIDs[bus.City] = -1
+		ids[bus.City] = -1
 	}
 
-	var names = make([]string, 0, len(citiesIDs))
-	for name := range citiesIDs {
+	var names = make([]string, 0, len(ids))
+	for name := range ids {
 		names = append(names, name)
 	}
 
@@ -133,12 +126,16 @@ func (s *BusStore) New(ctx context.Context, buses ...*model.Bus) error {
 			return errors.New("found no city")
 		}
 		for _, city := range cities {
-			citiesIDs[city.Name] = city.ID
+			ids[city.Name] = city.ID
 		}
-
 		ib := sq.Insert("bus").Columns("city_id", "num")
 		for _, bus := range buses {
-			ib = ib.Values(citiesIDs[bus.City], bus.Num)
+			id := ids[bus.City]
+			if id < 0 {
+				s.logger(ctx).Debugf("bus [%s, %s] skipped", bus.City, bus.Num)
+				continue
+			}
+			ib = ib.Values(id, bus.Num)
 		}
 
 		query, args, err := ib.ToSql()
@@ -160,6 +157,5 @@ func (s *BusStore) New(ctx context.Context, buses ...*model.Bus) error {
 		}
 		return nil
 	}
-
 	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
 }
