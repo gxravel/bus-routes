@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -84,4 +85,12 @@ func registerSwagger(r *chi.Mux) {
 
 	swaggerHandler := http.StripPrefix("/internal/", http.FileServer(http.FS(assets.SwaggerFiles)))
 	r.Get("/internal/swagger/*", swaggerHandler.ServeHTTP)
+}
+
+func (s *Server) processRequest(r *http.Request, data interface{}) error {
+	if err := json.NewDecoder(r.Body).Decode(data); err != nil {
+		s.logger.WithErr(err).Error("decoding data")
+		return err
+	}
+	return nil
 }
