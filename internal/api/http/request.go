@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,16 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type intSize uint8
-
-const (
-	i intSize = iota
-	i64
-	ui
-	ui64
-)
-
-func parseQueryInt(r *http.Request, field string, is intSize) (interface{}, error) {
+func parseQueryInt64(r *http.Request, field string) (int64, error) {
 	value, err := ParseQueryParam(r, field)
 	if err != nil {
 		return 0, err
@@ -30,19 +22,31 @@ func parseQueryInt(r *http.Request, field string, is intSize) (interface{}, erro
 
 	iv, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return 0, errors.Errorf("%v is not an int", value)
+		return 0, errors.Errorf("%v it not an int", value)
 	}
+	return iv, nil
+}
 
-	switch is {
-	case i64:
-		return int64(iv), nil
-	case ui:
-		return uint(iv), nil
-	case ui64:
-		return uint64(iv), nil
-	default:
-		return int(iv), nil
+func parseQueryInt(r *http.Request, field string) (int, error) {
+	result, err := parseQueryInt64(r, field)
+	if err != nil {
+		return 0, err
 	}
+	return int(result), nil
+}
+func parseQueryInt8(r *http.Request, field string) (int8, error) {
+	result, err := parseQueryInt64(r, field)
+	if err != nil {
+		return 0, err
+	}
+	return int8(result), nil
+}
+func parseQueryUint64(r *http.Request, field string) (uint64, error) {
+	result, err := parseQueryInt64(r, field)
+	if err != nil {
+		return 0, err
+	}
+	return uint64(result), nil
 }
 
 // ParseQueryParam parses query params for specific field.
@@ -71,17 +75,17 @@ func ParseQueryParams(r *http.Request, field string) ([]string, error) {
 
 // ParsePaginator parses paginator from request.
 func ParsePaginator(r *http.Request) (*dataprovider.Paginator, error) {
-	limit, err := parseQueryInt(r, "limit", ui64)
+	limit, err := parseQueryUint64(r, "limit")
 	if err != nil {
 		return nil, err
 	}
 
-	offset, err := parseQueryInt(r, "offset", ui64)
+	offset, err := parseQueryUint64(r, "offset")
 	if err != nil {
 		return nil, err
 	}
 
-	return dataprovider.NewPaginator(offset.(uint64), limit.(uint64)), nil
+	return dataprovider.NewPaginator(offset, limit), nil
 }
 
 func ParseQueryInt64Slice(r *http.Request, field string) ([]int64, error) {
@@ -111,20 +115,30 @@ func ParseQueryInt64Slice(r *http.Request, field string) ([]int64, error) {
 			vals = append(vals, val)
 		}
 	}
-
 	return vals, nil
 }
 
 func ParseQueryIntSlice(r *http.Request, field string) ([]int, error) {
-	i64, err := ParseQueryInt64Slice(r, field)
+	vals, err := ParseQueryInt64Slice(r, field)
 	if err != nil {
 		return nil, err
 	}
-	var result = make([]int, 0, len(i64))
-	for _, i := range i64 {
-		result = append(result, int(i))
+	var result = make([]int, 0, len(vals))
+	for _, val := range vals {
+		result = append(result, int(val))
 	}
+	return result, nil
+}
 
+func ParseQueryUint8Slice(r *http.Request, field string) ([]int8, error) {
+	vals, err := ParseQueryInt64Slice(r, field)
+	if err != nil {
+		return nil, err
+	}
+	var result = make([]int8, 0, len(vals))
+	for _, val := range vals {
+		result = append(result, int8(val))
+	}
 	return result, nil
 }
 
@@ -167,7 +181,7 @@ func ParseCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 }
 
 func ParseDeleteCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
-	id, err := parseQueryInt(r, "id", i)
+	id, err := parseQueryInt(r, "id")
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +191,15 @@ func ParseDeleteCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 		return nil, err
 	}
 
-	return dataprovider.NewCityFilter().
-		ByIDs(id.(int)).ByNames(name), nil
+	filter := dataprovider.NewCityFilter()
+	if id != 0 {
+		filter = filter.ByIDs(id)
+	}
+	if name != "" {
+		filter = filter.ByNames(name)
+	}
+
+	return filter, nil
 }
 
 func ParseStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
@@ -203,7 +224,7 @@ func ParseStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
 }
 
 func ParseDeleteStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
-	id, err := parseQueryInt(r, "id", i64)
+	id, err := parseQueryInt64(r, "id")
 	if err != nil {
 		return nil, err
 	}
@@ -213,6 +234,65 @@ func ParseDeleteStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
 		return nil, err
 	}
 
-	return dataprovider.NewStopFilter().
-		ByIDs(id.(int64)).ByAddresses(address), nil
+	filter := dataprovider.NewStopFilter()
+	if id != 0 {
+		filter = filter.ByIDs(id)
+	}
+	if address != "" {
+		filter = filter.ByAddresses(address)
+	}
+	return filter, nil
+}
+
+func ParseRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
+	busIDs, err := ParseQueryInt64Slice(r, "bus_ids")
+	if err != nil {
+		return nil, err
+	}
+
+	stopIDs, err := ParseQueryInt64Slice(r, "stop_ids")
+	if err != nil {
+		return nil, err
+	}
+
+	steps, err := ParseQueryUint8Slice(r, "steps")
+	if err != nil {
+		return nil, err
+	}
+
+	return dataprovider.NewRouteFilter().
+		ByBusIDs(busIDs...).ByStopIDs(stopIDs...).BySteps(steps...), nil
+
+}
+
+func ParseDeleteRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
+	busID, err := parseQueryInt64(r, "bus_id")
+	if err != nil {
+		return nil, err
+	}
+
+	stopID, err := parseQueryInt64(r, "stop_id")
+	if err != nil {
+		return nil, err
+	}
+
+	step, err := parseQueryInt8(r, "step")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("step: %v\n", step)
+
+	filter := dataprovider.NewRouteFilter()
+	if busID != 0 {
+		filter = filter.ByBusIDs(busID)
+	}
+	if stopID != 0 {
+		filter = filter.ByStopIDs(stopID)
+	}
+	if step != 0 {
+		filter = filter.BySteps(step)
+	}
+	fmt.Printf("step filter: %v\n", filter.Steps)
+	return filter, nil
 }

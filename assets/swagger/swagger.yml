@@ -78,25 +78,39 @@ definitions:
         description: Адрес остановки
         type: string
         example: ул. Пушкина, 62
+  Route:
+    properties:
+      bus_id:
+        description: Идентификатор автобуса
+        type: integer
+        example: 50
+      stop_id:
+        description: Идентификатор остановки
+        type: integer
+        example: 50
+      step:
+        description: Порядковый номер остановки на пути автобуса
+        type: integer
+        example: 1
 
 tags:
-  - name: api
-    description: Bus Routes API
+  - name: internal
+    description: Internal routes
   - name: buses
-    description: all about buses
+    description: All about buses
   - name: cities
-    description: all about cities
+    description: All about cities
   - name: stops
-    description: all about stops
+    description: All about stops
   - name: routes
-    description: all about routes
+    description: All about routes
 
 paths:
   /internal/health:
     get:
       summary: Health
       tags:
-        - api
+        - internal
       responses:
         "200":
           description: Success
@@ -354,6 +368,119 @@ paths:
           description: Адрес остановки
           in: query
           type: string
+          required: false
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+
+  /api/v1/routes:
+    get:
+      summary: Получение списка путей автобусов
+      tags:
+        - routes
+      parameters:
+        - name: bus_ids
+          description: Идентификаторы автобусов
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+        - name: stop_ids
+          description: Идентификаторы остановок
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+        - name: steps
+          description: Порядковые номера остановок на пути автобуса
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Route"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Добавление новых путей автобусов
+      tags:
+        - routes
+      parameters:
+        - name: routes
+          description: Пути автобусов
+          in: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Route"
+            example:
+              [
+                { bus_id: 1, stop_id: 1, step: 1 },
+                { bus_id: 1, stop_id: 5, step: 2 },
+                { bus_id: 1, stop_id: 17, step: 3 },
+              ]
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    put:
+      summary: Редактирование пути автобуса
+      tags:
+        - routes
+      parameters:
+        - name: route
+          description: Путь автобуса
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/Route"
+            example: { bus_id: 1, stop_id: 10, step: 1 }
+            required:
+              - bus_id
+              - stop_id
+              - step
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    delete:
+      summary: Удаление пути автобуса
+      tags:
+        - routes
+      parameters:
+        - name: bus_id
+          description: Идентификатор автобуса
+          in: query
+          type: integer
+          required: true
+        - name: stop_id
+          description: Идентификатор остановки
+          in: query
+          type: integer
+          required: false
+        - name: step
+          description: Порядковый номер остановки на пути автобуса
+          in: query
+          type: integer
           required: false
       responses:
         "204":

@@ -36,8 +36,8 @@ func migrationInit(schema string) *migrator.Migration {
 					bus_id BIGINT NOT NULL,
 					stop_id BIGINT NOT NULL,
 					-- step is the number of a bus stop in its route.
-					step TINYINT UNSIGNED NOT NULL,
-					PRIMARY KEY(bus_id, stop_id, step),
+					step TINYINT NOT NULL,
+					PRIMARY KEY(bus_id, step),
 					FOREIGN KEY(bus_id) REFERENCES bus(id) ON UPDATE CASCADE ON DELETE CASCADE,
 					FOREIGN KEY(stop_id) REFERENCES stop(id) ON UPDATE CASCADE
 				)`,

@@ -63,6 +63,12 @@ func NewServer(
 				r.Put("/", srv.putStop)
 				r.Delete("/", srv.deleteStop)
 			})
+			r.Route("/routes", func(r chi.Router) {
+				r.Get("/", srv.getRoutes)
+				r.Post("/", srv.postRoutes)
+				r.Put("/", srv.putRoute)
+				r.Delete("/", srv.deleteRoute)
+			})
 		})
 	})
 
