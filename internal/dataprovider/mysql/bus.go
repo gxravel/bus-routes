@@ -3,13 +3,13 @@ package mysql
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
 	"github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
+
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 type BusStore struct {

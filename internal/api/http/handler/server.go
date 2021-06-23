@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/gxravel/bus-routes/assets"
 	mw "github.com/gxravel/bus-routes/internal/api/http/middleware"
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/logger"
+
+	"github.com/go-chi/chi"
 )
 
 type Server struct {

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gxravel/bus-routes/internal/dataprovider"
+	"github.com/gxravel/bus-routes/internal/model"
 	"github.com/pkg/errors"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gxravel/bus-routes/internal/dataprovider"
-	"github.com/gxravel/bus-routes/internal/model"
 	"github.com/jmoiron/sqlx"
 )
 
