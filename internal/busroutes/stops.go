@@ -16,12 +16,12 @@ func (r *BusRoutes) GetStops(ctx context.Context, filter *dataprovider.StopFilte
 	return stops(dbStops...), nil
 }
 
-func (r *BusRoutes) PostStops(ctx context.Context, stops ...*v1.Stop) error {
-	err := r.stopStore.New(ctx, dbStops(stops...)...)
+func (r *BusRoutes) AddStops(ctx context.Context, stops ...*v1.Stop) error {
+	err := r.stopStore.Add(ctx, dbStops(stops...)...)
 	return err
 }
 
-func (r *BusRoutes) PutStop(ctx context.Context, stop *v1.Stop) error {
+func (r *BusRoutes) UpdateStops(ctx context.Context, stop *v1.Stop) error {
 	err := r.stopStore.Update(ctx, dbStops(stop)[0])
 	return err
 }

@@ -29,7 +29,7 @@ func (s *Server) getRoutes(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) postRoutes(w http.ResponseWriter, r *http.Request) {
+func (s *Server) addRoutes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var routes = make([]*v1.Route, 0)
@@ -43,7 +43,7 @@ func (s *Server) postRoutes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PostRoutes(ctx, routes...)
+	err := s.busroutes.AddRoutes(ctx, routes...)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
@@ -52,7 +52,7 @@ func (s *Server) postRoutes(w http.ResponseWriter, r *http.Request) {
 	api.RespondCreated(w)
 }
 
-func (s *Server) putRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) updateRoute(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var route = &v1.Route{}
@@ -66,7 +66,7 @@ func (s *Server) putRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PutRoute(ctx, route)
+	err := s.busroutes.UpdateRoute(ctx, route)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return

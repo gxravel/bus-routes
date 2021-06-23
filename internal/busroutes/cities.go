@@ -16,12 +16,12 @@ func (r *BusRoutes) GetCities(ctx context.Context, filter *dataprovider.CityFilt
 	return cities(dbCities...), nil
 }
 
-func (r *BusRoutes) PostCities(ctx context.Context, cities ...*v1.City) error {
-	err := r.cityStore.New(ctx, dbCities(cities...)...)
+func (r *BusRoutes) AddCities(ctx context.Context, cities ...*v1.City) error {
+	err := r.cityStore.Add(ctx, dbCities(cities...)...)
 	return err
 }
 
-func (r *BusRoutes) PutCity(ctx context.Context, city *v1.City) error {
+func (r *BusRoutes) UpdateCity(ctx context.Context, city *v1.City) error {
 	err := r.cityStore.Update(ctx, dbCities(city)[0])
 	return err
 }

@@ -29,7 +29,7 @@ func (s *Server) getCities(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) postCities(w http.ResponseWriter, r *http.Request) {
+func (s *Server) addCities(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var cities = make([]*v1.City, 0)
@@ -43,7 +43,7 @@ func (s *Server) postCities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PostCities(ctx, cities...)
+	err := s.busroutes.AddCities(ctx, cities...)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
@@ -52,7 +52,7 @@ func (s *Server) postCities(w http.ResponseWriter, r *http.Request) {
 	api.RespondCreated(w)
 }
 
-func (s *Server) putCity(w http.ResponseWriter, r *http.Request) {
+func (s *Server) updateCity(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var city = &v1.City{}
@@ -66,7 +66,7 @@ func (s *Server) putCity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PutCity(ctx, city)
+	err := s.busroutes.UpdateCity(ctx, city)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return

@@ -83,7 +83,7 @@ func (s *StopStore) ListByFilter(ctx context.Context, filter *dataprovider.StopF
 	return result.([]*model.Stop), nil
 }
 
-func (s *StopStore) New(ctx context.Context, stops ...*model.Stop) error {
+func (s *StopStore) Add(ctx context.Context, stops ...*model.Stop) error {
 	var ids = make(map[string]int, len(stops))
 	for _, stop := range stops {
 		ids[stop.City] = -1

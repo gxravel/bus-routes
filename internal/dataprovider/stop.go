@@ -10,7 +10,7 @@ type StopStore interface {
 	WithTx(*Tx) StopStore
 	ByFilter(ctx context.Context, filter *StopFilter) (*model.Stop, error)
 	ListByFilter(ctx context.Context, filter *StopFilter) ([]*model.Stop, error)
-	New(ctx context.Context, stops ...*model.Stop) error
+	Add(ctx context.Context, stops ...*model.Stop) error
 	Update(ctx context.Context, stop *model.Stop) error
 	Delete(ctx context.Context, filter *StopFilter) error
 }

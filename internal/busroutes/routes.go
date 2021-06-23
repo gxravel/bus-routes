@@ -16,12 +16,12 @@ func (r *BusRoutes) GetRoutes(ctx context.Context, filter *dataprovider.RouteFil
 	return routes(dbRoutes...), nil
 }
 
-func (r *BusRoutes) PostRoutes(ctx context.Context, routes ...*v1.Route) error {
-	err := r.routeStore.New(ctx, dbRoutes(routes...)...)
+func (r *BusRoutes) AddRoutes(ctx context.Context, routes ...*v1.Route) error {
+	err := r.routeStore.Add(ctx, dbRoutes(routes...)...)
 	return err
 }
 
-func (r *BusRoutes) PutRoute(ctx context.Context, route *v1.Route) error {
+func (r *BusRoutes) UpdateRoute(ctx context.Context, route *v1.Route) error {
 	err := r.routeStore.Update(ctx, dbRoutes(route)[0])
 	return err
 }

@@ -29,7 +29,7 @@ func (s *Server) getBuses(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) postBuses(w http.ResponseWriter, r *http.Request) {
+func (s *Server) addBuses(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var buses = make([]*v1.Bus, 0)
@@ -43,7 +43,7 @@ func (s *Server) postBuses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PostBuses(ctx, buses...)
+	err := s.busroutes.AddBuses(ctx, buses...)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return

@@ -49,24 +49,24 @@ func NewServer(
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/cities", func(r chi.Router) {
 				r.Get("/", srv.getCities)
-				r.Post("/", srv.postCities)
-				r.Put("/", srv.putCity)
+				r.Post("/", srv.addCities)
+				r.Put("/", srv.updateCity)
 				r.Delete("/", srv.deleteCity)
 			})
 			r.Route("/buses", func(r chi.Router) {
 				r.Get("/", srv.getBuses)
-				r.Post("/", srv.postBuses)
+				r.Post("/", srv.addBuses)
 			})
 			r.Route("/stops", func(r chi.Router) {
 				r.Get("/", srv.getStops)
-				r.Post("/", srv.postStops)
-				r.Put("/", srv.putStop)
+				r.Post("/", srv.addStops)
+				r.Put("/", srv.updateStop)
 				r.Delete("/", srv.deleteStop)
 			})
 			r.Route("/routes", func(r chi.Router) {
 				r.Get("/", srv.getRoutes)
-				r.Post("/", srv.postRoutes)
-				r.Put("/", srv.putRoute)
+				r.Post("/", srv.addRoutes)
+				r.Put("/", srv.updateRoute)
 				r.Delete("/", srv.deleteRoute)
 			})
 		})

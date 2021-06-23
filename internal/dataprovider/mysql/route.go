@@ -83,7 +83,7 @@ func (s *RouteStore) ListByFilter(ctx context.Context, filter *dataprovider.Rout
 	return result.([]*model.Route), nil
 }
 
-func (s *RouteStore) New(ctx context.Context, routes ...*model.Route) error {
+func (s *RouteStore) Add(ctx context.Context, routes ...*model.Route) error {
 	qb := sq.Insert(s.tableName).Columns("bus_id", "stop_id", "step")
 	for _, route := range routes {
 		qb = qb.Values(route.BusID, route.StopID, route.Step)
