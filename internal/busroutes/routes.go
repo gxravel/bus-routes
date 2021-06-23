@@ -17,13 +17,11 @@ func (r *BusRoutes) GetRoutes(ctx context.Context, filter *dataprovider.RouteFil
 }
 
 func (r *BusRoutes) AddRoutes(ctx context.Context, routes ...*v1.Route) error {
-	err := r.routeStore.Add(ctx, dbRoutes(routes...)...)
-	return err
+	return r.routeStore.Add(ctx, dbRoutes(routes...)...)
 }
 
 func (r *BusRoutes) UpdateRoute(ctx context.Context, route *v1.Route) error {
-	err := r.routeStore.Update(ctx, dbRoutes(route)[0])
-	return err
+	return r.routeStore.Update(ctx, dbRoutes(route)[0])
 }
 
 func (r *BusRoutes) DeleteRoute(ctx context.Context, filter *dataprovider.RouteFilter) error {

@@ -44,8 +44,7 @@ func (s *Server) addCities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.AddCities(ctx, cities...)
-	if err != nil {
+	if err := s.busroutes.AddCities(ctx, cities...); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -67,8 +66,7 @@ func (s *Server) updateCity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.UpdateCity(ctx, city)
-	if err != nil {
+	if err := s.busroutes.UpdateCity(ctx, city); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -85,8 +83,7 @@ func (s *Server) deleteCity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.busroutes.DeleteCity(ctx, filter)
-	if err != nil {
+	if err = s.busroutes.DeleteCity(ctx, filter); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}

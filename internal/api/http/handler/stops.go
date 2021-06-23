@@ -44,8 +44,7 @@ func (s *Server) addStops(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.AddStops(ctx, stops...)
-	if err != nil {
+	if err := s.busroutes.AddStops(ctx, stops...); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -67,8 +66,7 @@ func (s *Server) updateStop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.UpdateStops(ctx, stop)
-	if err != nil {
+	if err := s.busroutes.UpdateStops(ctx, stop); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -85,8 +83,7 @@ func (s *Server) deleteStop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.busroutes.DeleteStop(ctx, filter)
-	if err != nil {
+	if err = s.busroutes.DeleteStop(ctx, filter); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}

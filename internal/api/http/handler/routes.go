@@ -44,8 +44,7 @@ func (s *Server) addRoutes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.AddRoutes(ctx, routes...)
-	if err != nil {
+	if err := s.busroutes.AddRoutes(ctx, routes...); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -67,8 +66,7 @@ func (s *Server) updateRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.UpdateRoute(ctx, route)
-	if err != nil {
+	if err := s.busroutes.UpdateRoute(ctx, route); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -85,8 +83,7 @@ func (s *Server) deleteRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.busroutes.DeleteRoute(ctx, filter)
-	if err != nil {
+	if err = s.busroutes.DeleteRoute(ctx, filter); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
