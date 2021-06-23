@@ -121,7 +121,7 @@ func CityID(ctx context.Context, name string, db sqlx.ExtContext, txer dataprovi
 	cityFilter := dataprovider.NewCityFilter().ByNames(name)
 	city, err := cityStore.ByFilter(ctx, cityFilter)
 	if err != nil {
-		return -1, errors.Wrap(err, "getting city from city store")
+		return 0, errors.Wrap(err, "getting city from city store")
 	}
 	return city.ID, nil
 }

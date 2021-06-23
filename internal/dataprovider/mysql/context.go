@@ -44,7 +44,7 @@ func selectContext(ctx context.Context, qb sq.SelectBuilder, entity string, db s
 		return nil, err
 	}
 
-	msg := fmt.Sprintf(codewords+" by filter from database with query %s", query)
+	msg := fmt.Sprintf(codewords+" by filter with query %s", query)
 
 	switch resultType {
 	case TypeCity:
@@ -78,11 +78,11 @@ func selectContext(ctx context.Context, qb sq.SelectBuilder, entity string, db s
 
 func toSql(ctx context.Context, qb interface{}, entity string) (string, []interface{}, string, error) {
 	var (
-		query string
-		args  []interface{}
-		err   error
+		query     string
+		args      []interface{}
+		codewords string
+		err       error
 	)
-	var codewords string
 	switch qb := qb.(type) {
 	case sq.SelectBuilder:
 		codewords = "selecting "
@@ -110,7 +110,7 @@ func toSql(ctx context.Context, qb interface{}, entity string) (string, []interf
 	logger.FromContext(ctx).WithFields(
 		"query", query,
 		"args", args).
-		Debug(codewords + " by filter query SQL")
+		Debug(codewords)
 
 	return query, args, codewords, nil
 }
