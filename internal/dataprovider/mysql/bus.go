@@ -50,6 +50,13 @@ func busCond(f *dataprovider.BusFilter) sq.Sqlizer {
 	return cond
 }
 
+func (s *BusStore) joins(qb sq.SelectBuilder, filter *dataprovider.BusFilter) sq.SelectBuilder {
+	if len(filter.Cities) > 0 {
+		qb = qb.Join("city ON bus.city_id = city.id")
+	}
+	return qb
+}
+
 func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter) (*model.Bus, error) {
 	buses, err := s.ListByFilter(ctx, filter)
 
@@ -73,8 +80,9 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 			"num",
 		).
 		From(s.tableName).
-		InnerJoin("city on bus.city_id=city.id").
 		Where(busCond(filter))
+
+	qb = s.joins(qb, filter)
 
 	if filter.Paginator != nil {
 		qb = withPaginator(qb, filter.Paginator)
@@ -90,7 +98,7 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 	var ids = make(map[string]int, len(buses))
 	for _, bus := range buses {
-		ids[bus.City] = -1
+		ids[bus.City] = 0
 	}
 
 	f := func(tx *dataprovider.Tx) error {
@@ -101,7 +109,7 @@ func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 		qb := sq.Insert("bus").Columns("city_id", "num")
 		for _, bus := range buses {
 			id := ids[bus.City]
-			if id < 0 {
+			if id == 0 {
 				logger.FromContext(ctx).Debugf("bus [%s, %s] skipped", bus.City, bus.Num)
 				continue
 			}

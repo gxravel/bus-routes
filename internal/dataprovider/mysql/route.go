@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gxravel/bus-routes/internal/dataprovider"
 	"github.com/gxravel/bus-routes/internal/model"
@@ -98,7 +97,5 @@ func (s *RouteStore) Update(ctx context.Context, route *model.Route) error {
 
 func (s *RouteStore) Delete(ctx context.Context, filter *dataprovider.RouteFilter) error {
 	qb := sq.Delete(s.tableName).Where(routeCond(filter))
-	// qb := sq.Delete(s.tableName).Where(sq.Eq{"bus_id": filter.BusIDs, "step": filter.Steps[0]})
-	fmt.Printf("filter: %v\n", filter.Steps)
 	return execContext(ctx, qb, s.tableName, s.txer)
 }

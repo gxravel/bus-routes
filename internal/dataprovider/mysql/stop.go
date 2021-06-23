@@ -50,6 +50,13 @@ func stopCond(f *dataprovider.StopFilter) sq.Sqlizer {
 	return cond
 }
 
+func (s *StopStore) joins(qb sq.SelectBuilder, filter *dataprovider.StopFilter) sq.SelectBuilder {
+	if len(filter.Cities) > 0 {
+		qb = qb.Join("city ON stop.city_id = city.id")
+	}
+	return qb
+}
+
 func (s *StopStore) ByFilter(ctx context.Context, filter *dataprovider.StopFilter) (*model.Stop, error) {
 	stops, err := s.ListByFilter(ctx, filter)
 
@@ -73,8 +80,9 @@ func (s *StopStore) ListByFilter(ctx context.Context, filter *dataprovider.StopF
 			"address",
 		).
 		From(s.tableName).
-		InnerJoin("city on stop.city_id=city.id").
 		Where(stopCond(filter))
+
+	qb = s.joins(qb, filter)
 
 	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeStop)
 	if err != nil {
@@ -124,6 +132,11 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 		if err != nil {
 			return err
 		}
+		if id == 0 {
+			err := errors.Errorf("did not found the city %s", stop.City)
+			logger.FromContext(ctx).Debug(err.Error())
+			return err
+		}
 		qb := sq.Update(s.tableName).Set("city_id", id).Set("Address", stop.Address).Where(sq.Eq{"id": stop.ID})
 		query, args, _, err := toSql(ctx, qb, s.tableName)
 		if err != nil {
@@ -131,7 +144,7 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 		}
 
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "inserting stops with query %s", query)
+			return errors.Wrapf(err, "updating stop with query %s", query)
 		}
 		return nil
 	}
