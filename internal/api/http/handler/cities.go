@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	"github.com/gxravel/bus-routes/internal/logger"
 	v1 "github.com/gxravel/bus-routes/internal/model/v1"
 	"github.com/pkg/errors"
 )
@@ -35,8 +33,7 @@ func (s *Server) postCities(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var cities = make([]*v1.City, 0)
-	if err := json.NewDecoder(r.Body).Decode(&cities); err != nil {
-		logger.FromContext(ctx).WithErr(err).Error("decoding data from post cities request")
+	if err := s.processRequest(r, &cities); err != nil {
 		api.RespondError(ctx, w, http.StatusBadRequest, err)
 		return
 	}
@@ -59,8 +56,7 @@ func (s *Server) putCity(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var city = &v1.City{}
-	if err := json.NewDecoder(r.Body).Decode(&city); err != nil {
-		logger.FromContext(ctx).WithErr(err).Error("decoding data from put city request")
+	if err := s.processRequest(r, city); err != nil {
 		api.RespondError(ctx, w, http.StatusBadRequest, err)
 		return
 	}

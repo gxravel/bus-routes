@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	"github.com/gxravel/bus-routes/internal/logger"
 	v1 "github.com/gxravel/bus-routes/internal/model/v1"
 	"github.com/pkg/errors"
 )
@@ -35,8 +33,7 @@ func (s *Server) postStops(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var stops = make([]*v1.Stop, 0)
-	if err := json.NewDecoder(r.Body).Decode(&stops); err != nil {
-		logger.FromContext(ctx).WithErr(err).Error("decoding data from post stops request")
+	if err := s.processRequest(r, &stops); err != nil {
 		api.RespondError(ctx, w, http.StatusBadRequest, err)
 		return
 	}
@@ -59,8 +56,7 @@ func (s *Server) putStop(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var stop = &v1.Stop{}
-	if err := json.NewDecoder(r.Body).Decode(&stop); err != nil {
-		logger.FromContext(ctx).WithErr(err).Error("decoding data from put stop request")
+	if err := s.processRequest(r, stop); err != nil {
 		api.RespondError(ctx, w, http.StatusBadRequest, err)
 		return
 	}
