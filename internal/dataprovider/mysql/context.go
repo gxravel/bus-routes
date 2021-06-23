@@ -29,8 +29,16 @@ func execContext(ctx context.Context, qb interface{}, entity string, txer datapr
 	}
 
 	f := func(tx *dataprovider.Tx) error {
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+		result, err := tx.ExecContext(ctx, query, args...)
+		if err != nil {
 			return errors.Wrapf(err, codewords+" with query %s", query)
+		}
+		num, err := result.RowsAffected()
+		if err != nil {
+			return errors.Wrap(err, "failed to call RowsAffected")
+		}
+		if num == 0 {
+			return errors.New("no rows affected: wrong id")
 		}
 		return nil
 	}

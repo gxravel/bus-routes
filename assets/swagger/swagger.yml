@@ -19,77 +19,77 @@ definitions:
       id:
         description: Идентификатор автобуса
         type: integer
-        example: 111
+        example: 1
       city:
         description: Название города
         type: string
-        example: Казань
+        example: Москва
       num:
         description: Номер автобуса
         type: string
-        example: 35А
+        example: "11"
   BusNoID:
     properties:
       city:
         description: Название города
         type: string
-        example: Казань
+        example: Москва
       num:
         description: Номер автобуса
         type: string
-        example: 35А
+        example: "11"
   City:
     properties:
       id:
         description: Идентификатор города
         type: integer
-        example: 50
+        example: 1
       name:
         description: Название города
         type: string
-        example: Казань
+        example: Москва
   CityNoID:
     properties:
       name:
         description: Название города
         type: string
-        example: Казань
+        example: Москва
   Stop:
     properties:
       id:
         description: Идентификатор остановки
         type: integer
-        example: 50
+        example: 1
       city:
         description: Название города
         type: string
-        example: Казань
+        example: Москва
       address:
         description: Адрес остановки
         type: string
-        example: ул. Пушкина, 62
+        example: ул. Улица, 1
   StopNoID:
     properties:
       city:
         description: Название города
         type: string
-        example: Казань
+        example: Москва
       address:
         description: Адрес остановки
         type: string
-        example: ул. Пушкина, 62
+        example: ул. Улица, 1
   Route:
     properties:
       bus_id:
         description: Идентификатор автобуса
         type: integer
-        example: 50
+        example: 1
       stop_id:
         description: Идентификатор остановки
         type: integer
-        example: 50
+        example: 1
       step:
-        description: Порядковый номер остановки на пути автобуса
+        description: Порядковый номер остановки по маршруту автобуса
         type: integer
         example: 1
 
@@ -243,7 +243,7 @@ paths:
           required: true
           schema:
             $ref: "#/definitions/City"
-            example: { id: 1, name: Калуга }
+            example: { id: 3, name: Калуга }
       responses:
         "204":
           description: No Content
@@ -325,8 +325,10 @@ paths:
               $ref: "#/definitions/StopNoID"
             example:
               [
-                { city: Москва, address: "ул. Пушкина, 62" },
-                { city: Ижевск, address: "ул. Жукова, 17" },
+                { city: Москва, address: "ул. Улица, 1" },
+                { city: Москва, address: "ул. Улица2, 1" },
+                { city: Москва, address: "ул. Улица3, 1" },
+                { city: Москва, address: "ул. Улица4, 1" },
               ]
       responses:
         "201":
@@ -346,7 +348,7 @@ paths:
           required: true
           schema:
             $ref: "#/definitions/Stop"
-            example: { id: 1, city: Калуга, address: "ул. Никитина, 10" }
+            example: { id: 3, city: Москва, address: "ул. Пушкина, 10" }
       responses:
         "204":
           description: No Content
@@ -379,7 +381,7 @@ paths:
 
   /api/v1/routes:
     get:
-      summary: Получение списка путей автобусов
+      summary: Получение списка маршрутов автобусов
       tags:
         - routes
       parameters:
@@ -398,7 +400,7 @@ paths:
             type: integer
           required: false
         - name: steps
-          description: Порядковые номера остановок на пути автобуса
+          description: Порядковые номера остановок по маршруту автобуса
           in: query
           type: array
           items:
@@ -414,12 +416,12 @@ paths:
         "500":
           description: Internal server error
     post:
-      summary: Добавление новых путей автобусов
+      summary: Добавление новых маршрутов автобусов
       tags:
         - routes
       parameters:
         - name: routes
-          description: Пути автобусов
+          description: Маршруты автобусов
           in: body
           required: true
           schema:
@@ -429,8 +431,8 @@ paths:
             example:
               [
                 { bus_id: 1, stop_id: 1, step: 1 },
-                { bus_id: 1, stop_id: 5, step: 2 },
-                { bus_id: 1, stop_id: 17, step: 3 },
+                { bus_id: 1, stop_id: 2, step: 2 },
+                { bus_id: 1, stop_id: 3, step: 3 },
               ]
       responses:
         "201":
@@ -440,17 +442,17 @@ paths:
         "500":
           description: Internal server error
     put:
-      summary: Редактирование пути автобуса
+      summary: Редактирование маршрута автобуса
       tags:
         - routes
       parameters:
         - name: route
-          description: Путь автобуса
+          description: Маршрут автобуса
           in: body
           required: true
           schema:
             $ref: "#/definitions/Route"
-            example: { bus_id: 1, stop_id: 10, step: 1 }
+            example: { bus_id: 1, stop_id: 4, step: 3 }
             required:
               - bus_id
               - stop_id
@@ -463,7 +465,7 @@ paths:
         "500":
           description: Internal server error
     delete:
-      summary: Удаление пути автобуса
+      summary: Удаление маршрута автобуса
       tags:
         - routes
       parameters:
@@ -478,7 +480,7 @@ paths:
           type: integer
           required: false
         - name: step
-          description: Порядковый номер остановки на пути автобуса
+          description: Порядковый номер остановки по маршруту автобуса
           in: query
           type: integer
           required: false

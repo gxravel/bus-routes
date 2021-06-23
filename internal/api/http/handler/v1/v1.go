@@ -1,9 +1,10 @@
 package v1
 
 type Bus struct {
-	ID   int64  `json:"id,omitempty"`
-	City string `json:"city"`
-	Num  string `json:"num"`
+	ID     int64  `json:"id,omitempty"`
+	City   string `json:"city,omitempty"`
+	CityID string `json:"city_id,omitempty"`
+	Num    string `json:"num"`
 }
 
 type City struct {
@@ -13,7 +14,8 @@ type City struct {
 
 type Stop struct {
 	ID      int64  `json:"id,omitempty"`
-	City    string `json:"city"`
+	City    string `json:"city,omitempty"`
+	CityID  string `json:"city_id,omitempty"`
 	Address string `json:"address"`
 }
 

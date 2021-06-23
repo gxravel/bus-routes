@@ -50,8 +50,20 @@ func stopCond(f *dataprovider.StopFilter) sq.Sqlizer {
 	return cond
 }
 
+func (s *StopStore) columns(filter *dataprovider.StopFilter) []string {
+	var result = []string{
+		"stop.id",
+		"city.name as city",
+		"address",
+	}
+	if filter.DoPreferIDs {
+		result[1] = "stop.city_id"
+	}
+	return result
+}
+
 func (s *StopStore) joins(qb sq.SelectBuilder, filter *dataprovider.StopFilter) sq.SelectBuilder {
-	if len(filter.Cities) > 0 {
+	if !filter.DoPreferIDs {
 		qb = qb.Join("city ON stop.city_id = city.id")
 	}
 	return qb
@@ -74,11 +86,7 @@ func (s *StopStore) ByFilter(ctx context.Context, filter *dataprovider.StopFilte
 
 func (s *StopStore) ListByFilter(ctx context.Context, filter *dataprovider.StopFilter) ([]*model.Stop, error) {
 	qb := sq.
-		Select(
-			"stop.id",
-			"city.name as city",
-			"address",
-		).
+		Select(s.columns(filter)...).
 		From(s.tableName).
 		Where(stopCond(filter))
 
@@ -143,8 +151,16 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 			return err
 		}
 
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+		result, err := tx.ExecContext(ctx, query, args...)
+		if err != nil {
 			return errors.Wrapf(err, "updating stop with query %s", query)
+		}
+		num, err := result.RowsAffected()
+		if err != nil {
+			return errors.Wrap(err, "failed to call RowsAffected")
+		}
+		if num == 0 {
+			return errors.New("no rows affected: wrong id")
 		}
 		return nil
 	}
