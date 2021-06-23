@@ -61,6 +61,7 @@ func main() {
 	txer := mysql.NewTxManager(db)
 	busStore := mysql.NewBusStore(db, txer)
 	cityStore := mysql.NewCityStore(db, txer)
+	stopStore := mysql.NewStopStore(db, txer)
 
 	busroutes := busroutes.New(
 		cfg,
@@ -68,6 +69,7 @@ func main() {
 		log,
 		busStore,
 		cityStore,
+		stopStore,
 		txer,
 	)
 
@@ -88,10 +90,7 @@ func main() {
 		serverErrors <- apiServer.ListenAndServe()
 	}()
 
-	log.WithFields(
-		"pid", os.Getpid(),
-		"cfg", cfg,
-	).Info("started")
+	log.Info("started")
 
 	defer log.Info("stopped")
 

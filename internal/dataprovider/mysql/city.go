@@ -2,13 +2,11 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/pkg/errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
-	"github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -32,10 +30,6 @@ func (s *CityStore) WithTx(tx *dataprovider.Tx) dataprovider.CityStore {
 		db:        tx,
 		tableName: s.tableName,
 	}
-}
-
-func (s *CityStore) logger(ctx context.Context) logger.Logger {
-	return logger.FromContext(ctx).WithStr("module", "mysql:city")
 }
 
 func cityCond(f *dataprovider.CityFilter) sq.Sqlizer {
@@ -63,7 +57,7 @@ func (s *CityStore) ByFilter(ctx context.Context, filter *dataprovider.CityFilte
 	case len(cities) == 1:
 		return cities[0], nil
 	default:
-		return nil, errors.New("fetched more than 1 City")
+		return nil, errors.New("fetched more than 1 city")
 	}
 }
 
@@ -76,26 +70,11 @@ func (s *CityStore) ListByFilter(ctx context.Context, filter *dataprovider.CityF
 		From(s.tableName).
 		Where(cityCond(filter))
 
-	query, args, err := qb.ToSql()
+	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeCity)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating sql query for getting cities by filter")
+		return nil, err
 	}
-
-	s.logger(ctx).
-		WithFields(
-			"query", query,
-			"args", args).
-		Debug("selecting cities by filter query SQL")
-
-	cities := make([]*model.City, 0)
-	if err = sqlx.SelectContext(ctx, s.db, &cities, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return cities, nil
-		}
-		return nil, errors.Wrapf(err, "selecting cities by filter from database with query %s", query)
-	}
-
-	return cities, nil
+	return result.([]*model.City), nil
 }
 
 func (s *CityStore) New(ctx context.Context, cities ...*model.City) error {
@@ -103,72 +82,46 @@ func (s *CityStore) New(ctx context.Context, cities ...*model.City) error {
 	for _, city := range cities {
 		qb = qb.Values(city.Name)
 	}
-
-	query, args, err := qb.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "creating sql query for inserting cities")
-	}
-
-	s.logger(ctx).
-		WithFields(
-			"query", query,
-			"args", args).
-		Debug("inserting cities")
-
-	f := func(tx *dataprovider.Tx) error {
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "inserting cities with query %s", query)
-		}
-		return nil
-	}
-
-	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
+	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
 func (s *CityStore) Update(ctx context.Context, city *model.City) error {
 	qb := sq.Update(s.tableName).Set("name", city.Name).Where(sq.Eq{"id": city.ID})
-
-	query, args, err := qb.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "creating sql query for updating city")
-	}
-
-	s.logger(ctx).
-		WithFields(
-			"query", query,
-			"args", args).
-		Debug("updating city")
-
-	f := func(tx *dataprovider.Tx) error {
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "updating city with query %s", query)
-		}
-		return nil
-	}
-
-	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
+	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
 func (s *CityStore) Delete(ctx context.Context, filter *dataprovider.CityFilter) error {
 	qb := sq.Delete(s.tableName).Where(cityCond(filter))
+	return execContext(ctx, qb, s.tableName, s.txer)
+}
 
-	query, args, err := qb.ToSql()
+func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) error {
+	var names = make([]string, 0, len(ids))
+	for name := range ids {
+		names = append(names, name)
+	}
+
+	cityStore := NewCityStore(db, txer).WithTx(tx)
+	cityFilter := dataprovider.NewCityFilter().ByNames(names...)
+	cities, err := cityStore.ListByFilter(ctx, cityFilter)
 	if err != nil {
-		return errors.Wrap(err, "creating sql query for deleting city")
+		return errors.Wrap(err, "getting cities from city store")
 	}
-
-	s.logger(ctx).
-		WithFields(
-			"query", query,
-			"args", args).
-		Debug("deleting city")
-
-	f := func(tx *dataprovider.Tx) error {
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "deleting city with query %s", query)
-		}
-		return nil
+	if len(cities) == 0 {
+		return errors.New("did not find a city")
 	}
+	for _, city := range cities {
+		ids[city.Name] = city.ID
+	}
+	return nil
+}
 
-	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
+func CityID(ctx context.Context, name string, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) (int, error) {
+	cityStore := NewCityStore(db, txer).WithTx(tx)
+	cityFilter := dataprovider.NewCityFilter().ByNames(name)
+	city, err := cityStore.ByFilter(ctx, cityFilter)
+	if err != nil {
+		return -1, errors.Wrap(err, "getting city from city store")
+	}
+	return city.ID, nil
 }

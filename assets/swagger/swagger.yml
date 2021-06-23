@@ -54,6 +54,30 @@ definitions:
         description: Название города
         type: string
         example: Казань
+  Stop:
+    properties:
+      id:
+        description: Идентификатор остановки
+        type: integer
+        example: 50
+      city:
+        description: Название города
+        type: string
+        example: Казань
+      address:
+        description: Адрес остановки
+        type: string
+        example: ул. Пушкина, 62
+  StopNoID:
+    properties:
+      city:
+        description: Название города
+        type: string
+        example: Казань
+      address:
+        description: Адрес остановки
+        type: string
+        example: ул. Пушкина, 62
 
 tags:
   - name: api
@@ -62,6 +86,10 @@ tags:
     description: all about buses
   - name: cities
     description: all about cities
+  - name: stops
+    description: all about stops
+  - name: routes
+    description: all about routes
 
 paths:
   /internal/health:
@@ -221,6 +249,109 @@ paths:
           required: false
         - name: name
           description: Название города
+          in: query
+          type: string
+          required: false
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+
+  /api/v1/stops:
+    get:
+      summary: Получение списка остановок
+      tags:
+        - stops
+      parameters:
+        - name: ids
+          description: Идентификаторы остановок
+          in: query
+          type: array
+          items:
+            type: integer
+          required: false
+        - name: cities
+          description: Названия городов
+          in: query
+          type: array
+          items:
+            type: string
+          required: false
+        - name: addresses
+          description: Адреса остановок
+          in: query
+          type: array
+          items:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Stop"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Добавление новых остановок
+      tags:
+        - stops
+      parameters:
+        - name: stops
+          description: Остановки
+          in: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/StopNoID"
+            example:
+              [
+                { city: Москва, address: "ул. Пушкина, 62" },
+                { city: Ижевск, address: "ул. Жукова, 17" },
+              ]
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    put:
+      summary: Редактирование остановки
+      tags:
+        - stops
+      parameters:
+        - name: stop
+          description: Остановка
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/Stop"
+            example: { id: 1, city: Калуга, address: "ул. Никитина, 10" }
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    delete:
+      summary: Удаление остановки
+      tags:
+        - stops
+      parameters:
+        - name: id
+          description: Идентификатор остановки
+          in: query
+          type: integer
+          required: false
+        - name: address
+          description: Адрес остановки
           in: query
           type: string
           required: false
