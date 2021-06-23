@@ -5,6 +5,7 @@ import (
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
 	v1 "github.com/gxravel/bus-routes/internal/model/v1"
+
 	"github.com/pkg/errors"
 )
 

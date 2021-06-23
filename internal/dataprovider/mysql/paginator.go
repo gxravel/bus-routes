@@ -1,8 +1,9 @@
 package mysql
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
+
+	"github.com/Masterminds/squirrel"
 )
 
 func withPaginator(b squirrel.SelectBuilder, p *dataprovider.Paginator) squirrel.SelectBuilder {

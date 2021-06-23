@@ -5,8 +5,8 @@ import (
 
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/logger"
-	"github.com/jmoiron/sqlx"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
