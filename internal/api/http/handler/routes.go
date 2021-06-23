@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	v1 "github.com/gxravel/bus-routes/internal/model/v1"
+	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 
 	"github.com/pkg/errors"
 )

@@ -3,9 +3,9 @@ package busroutes
 import (
 	"context"
 
+	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
 	"github.com/gxravel/bus-routes/internal/model"
-	v1 "github.com/gxravel/bus-routes/internal/model/v1"
 )
 
 func (r *BusRoutes) GetCities(ctx context.Context, filter *dataprovider.CityFilter) ([]*v1.City, error) {

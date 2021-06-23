@@ -3,9 +3,9 @@ package busroutes
 import (
 	"context"
 
+	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
 	"github.com/gxravel/bus-routes/internal/model"
-	v1 "github.com/gxravel/bus-routes/internal/model/v1"
 )
 
 func (r *BusRoutes) GetBuses(ctx context.Context, filter *dataprovider.BusFilter) ([]*v1.Bus, error) {
