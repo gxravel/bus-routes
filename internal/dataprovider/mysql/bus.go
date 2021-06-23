@@ -50,8 +50,20 @@ func busCond(f *dataprovider.BusFilter) sq.Sqlizer {
 	return cond
 }
 
+func (s *BusStore) columns(filter *dataprovider.BusFilter) []string {
+	var result = []string{
+		"bus.id",
+		"city.name as city",
+		"num",
+	}
+	if filter.DoPreferIDs {
+		result[1] = "bus.city_id"
+	}
+	return result
+}
+
 func (s *BusStore) joins(qb sq.SelectBuilder, filter *dataprovider.BusFilter) sq.SelectBuilder {
-	if len(filter.Cities) > 0 {
+	if !filter.DoPreferIDs {
 		qb = qb.Join("city ON bus.city_id = city.id")
 	}
 	return qb
@@ -74,11 +86,7 @@ func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter)
 
 func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFilter) ([]*model.Bus, error) {
 	qb := sq.
-		Select(
-			"bus.id",
-			"city.name as city",
-			"num",
-		).
+		Select(s.columns(filter)...).
 		From(s.tableName).
 		Where(busCond(filter))
 

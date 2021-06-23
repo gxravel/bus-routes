@@ -16,9 +16,11 @@ type StopStore interface {
 }
 
 type StopFilter struct {
-	IDs       []int64
-	Cities    []string
-	Addresses []string
+	IDs         []int64
+	Cities      []string
+	CitiesIDs   []int
+	Addresses   []string
+	DoPreferIDs bool
 }
 
 func NewStopFilter() *StopFilter {
@@ -32,6 +34,16 @@ func (f *StopFilter) ByIDs(ids ...int64) *StopFilter {
 
 func (f *StopFilter) ByCities(cities ...string) *StopFilter {
 	f.Cities = cities
+	return f
+}
+
+func (f *StopFilter) ByCitiesIDs(citiesIDs ...int) *StopFilter {
+	f.CitiesIDs = citiesIDs
+	return f
+}
+
+func (f *StopFilter) PreferIDs() *StopFilter {
+	f.DoPreferIDs = true
 	return f
 }
 
