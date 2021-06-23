@@ -77,7 +77,7 @@ func (s *CityStore) ListByFilter(ctx context.Context, filter *dataprovider.CityF
 	return result.([]*model.City), nil
 }
 
-func (s *CityStore) New(ctx context.Context, cities ...*model.City) error {
+func (s *CityStore) Add(ctx context.Context, cities ...*model.City) error {
 	qb := sq.Insert(s.tableName).Columns("name")
 	for _, city := range cities {
 		qb = qb.Values(city.Name)

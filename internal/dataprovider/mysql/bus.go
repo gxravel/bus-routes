@@ -87,7 +87,7 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 	return result.([]*model.Bus), nil
 }
 
-func (s *BusStore) New(ctx context.Context, buses ...*model.Bus) error {
+func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 	var ids = make(map[string]int, len(buses))
 	for _, bus := range buses {
 		ids[bus.City] = -1

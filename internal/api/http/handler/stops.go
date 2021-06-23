@@ -29,7 +29,7 @@ func (s *Server) getStops(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) postStops(w http.ResponseWriter, r *http.Request) {
+func (s *Server) addStops(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var stops = make([]*v1.Stop, 0)
@@ -43,7 +43,7 @@ func (s *Server) postStops(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PostStops(ctx, stops...)
+	err := s.busroutes.AddStops(ctx, stops...)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
@@ -52,7 +52,7 @@ func (s *Server) postStops(w http.ResponseWriter, r *http.Request) {
 	api.RespondCreated(w)
 }
 
-func (s *Server) putStop(w http.ResponseWriter, r *http.Request) {
+func (s *Server) updateStop(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var stop = &v1.Stop{}
@@ -66,7 +66,7 @@ func (s *Server) putStop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.PutStop(ctx, stop)
+	err := s.busroutes.UpdateStops(ctx, stop)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return

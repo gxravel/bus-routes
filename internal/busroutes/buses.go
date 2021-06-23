@@ -16,8 +16,8 @@ func (r *BusRoutes) GetBuses(ctx context.Context, filter *dataprovider.BusFilter
 	return buses(dbBuses...), nil
 }
 
-func (r *BusRoutes) PostBuses(ctx context.Context, buses ...*v1.Bus) error {
-	return r.busStore.New(ctx, dbBuses(buses...)...)
+func (r *BusRoutes) AddBuses(ctx context.Context, buses ...*v1.Bus) error {
+	return r.busStore.Add(ctx, dbBuses(buses...)...)
 }
 
 func dbBuses(buses ...*v1.Bus) []*model.Bus {
@@ -32,13 +32,13 @@ func dbBuses(buses ...*v1.Bus) []*model.Bus {
 }
 
 func buses(dbBuses ...*model.Bus) []*v1.Bus {
-	var cities = make([]*v1.Bus, 0, len(dbBuses))
+	var buses = make([]*v1.Bus, 0, len(dbBuses))
 	for _, bus := range dbBuses {
-		cities = append(cities, &v1.Bus{
+		buses = append(buses, &v1.Bus{
 			ID:   bus.ID,
 			City: bus.City,
 			Num:  bus.Num,
 		})
 	}
-	return cities
+	return buses
 }
