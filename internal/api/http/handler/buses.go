@@ -44,8 +44,7 @@ func (s *Server) addBuses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.busroutes.AddBuses(ctx, buses...)
-	if err != nil {
+	if err := s.busroutes.AddBuses(ctx, buses...); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}

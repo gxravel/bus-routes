@@ -9,8 +9,7 @@ import (
 func (s *Server) getHealth(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	err := s.busroutes.IsHealthy(ctx)
-	if err != nil {
+	if err := s.busroutes.IsHealthy(ctx); err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}

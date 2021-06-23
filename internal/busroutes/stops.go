@@ -17,13 +17,11 @@ func (r *BusRoutes) GetStops(ctx context.Context, filter *dataprovider.StopFilte
 }
 
 func (r *BusRoutes) AddStops(ctx context.Context, stops ...*v1.Stop) error {
-	err := r.stopStore.Add(ctx, dbStops(stops...)...)
-	return err
+	return r.stopStore.Add(ctx, dbStops(stops...)...)
 }
 
 func (r *BusRoutes) UpdateStops(ctx context.Context, stop *v1.Stop) error {
-	err := r.stopStore.Update(ctx, dbStops(stop)[0])
-	return err
+	return r.stopStore.Update(ctx, dbStops(stop)[0])
 }
 
 func (r *BusRoutes) DeleteStop(ctx context.Context, filter *dataprovider.StopFilter) error {

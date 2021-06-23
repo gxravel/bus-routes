@@ -48,8 +48,7 @@ func main() {
 	}
 
 	defer func() {
-		err := db.Close()
-		if err != nil {
+		if err := db.Close(); err != nil {
 			log.WithErr(err).Error("closing database connection")
 		}
 	}()
