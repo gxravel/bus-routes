@@ -17,3 +17,5 @@ config:
     address: ":8090"
     read_timeout: 5s
     write_timeout: 5s
+  storage:
+    redis_dsn: localhost:6378

@@ -13,6 +13,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/dataprovider/mysql"
 	"github.com/gxravel/bus-routes/internal/logger"
+	"github.com/gxravel/bus-routes/internal/storage"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -55,6 +56,11 @@ func main() {
 
 	if err := db.Migrate(); err != nil {
 		log.WithErr(err).Fatal("can't migrate the db")
+	}
+
+	storage, err := storage.NewClient(cfg.Storage)
+	if err != nil {
+		log.WithErr(err).Fatal("connecting to storage client")
 	}
 
 	txer := mysql.NewTxManager(db)

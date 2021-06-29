@@ -17,3 +17,5 @@ api:
     address: {{ config.api.address }} # default: ":4000"
     read_timeout: {{ config.api.read_timeout }} # default: 5s
     write_timeout: {{ config.api.write_timeout }} # default: 5s
+storage:
+    redis_dsn: {{ config.storage.redis_dsn }} # default: localhost: 6378
