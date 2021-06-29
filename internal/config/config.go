@@ -15,12 +15,14 @@ type Config struct {
 	Environment     string        `mapstructure:"environment"`
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 
-	API api `mapstructure:"api"`
-	DB  DB  `mapstructure:"db"`
-	Log Log `mapstructure:"logger"`
+	API     API     `mapstructure:"api"`
+	DB      DB      `mapstructure:"db"`
+	Log     Log     `mapstructure:"logger"`
+	JWT     JWT     `mapstructure:"jwt"`
+	Storage Storage `mapstructure:"storage"`
 }
 
-type api struct {
+type API struct {
 	ServeSwagger bool          `mapstructure:"serve_swagger"`
 	Address      string        `mapstructure:"address"`
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
@@ -39,6 +41,15 @@ type Log struct {
 	Format string `mapstructure:"format"`
 }
 
+type JWT struct {
+	AccessKey    string        `mapstructure:"access_key"`
+	AccessExpiry time.Duration `mapstructure:"access_expiry"`
+}
+
+type Storage struct {
+	RedisDSN string `mapstructure:"redis_dsn"`
+}
+
 var defaults = map[string]interface{}{
 	"environment":      "development",
 	"shutdown_timeout": time.Second * 5,
@@ -55,6 +66,11 @@ var defaults = map[string]interface{}{
 
 	"logger.level":  "debug",
 	"logger.format": "json",
+
+	"jwt.access_key":    "jwt_access_very_strong_key",
+	"jwt.access_expiry": time.Minute * 15,
+
+	"storage.redis_dsn": "localhost:6378",
 }
 
 func New(dst string) (*Config, error) {

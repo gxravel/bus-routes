@@ -17,3 +17,10 @@ api:
     address: {{ config.api.address }} # default: ":4000"
     read_timeout: {{ config.api.read_timeout }} # default: 5s
     write_timeout: {{ config.api.write_timeout }} # default: 5s
+
+jwt:
+    access_key: {{ config.jwt.access_key }} # default: jwt_access_very_strong_key
+    access_expiry: {{ config.jwt.access_expiry }} # default: 15m
+
+storage:
+    redis_dsn: {{ config.storage.redis_dsn }} # default: localhost: 6378

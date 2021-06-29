@@ -13,7 +13,15 @@ services:
       MYSQL_PASSWORD: gxravel
     ports:
       - 3308:3306
+
+  storage:
+    image: redis
+    volumes:
+      - redis_data:/var/lib/redis
+    ports:
+      - 6378:6379
     
 volumes:
   db_data: {}
+  redis_data: {}
 

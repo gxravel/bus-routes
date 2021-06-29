@@ -49,6 +49,10 @@ func NewServer(
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
+			r.Route("/auth", func(r chi.Router) {
+				r.Post("/signup", srv.signup)
+				r.Post("/login", srv.login)
+			})
 			r.Route("/cities", func(r chi.Router) {
 				r.Get("/", srv.getCities)
 				r.Post("/", srv.addCities)
