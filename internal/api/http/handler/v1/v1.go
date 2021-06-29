@@ -28,6 +28,11 @@ type Route struct {
 type User struct {
 	ID       int64  `json:"id,omitempty"`
 	Email    string `json:"email"`
-	Password string `json:"password"`
-	Type     string `json:"type"`
+	Password string `json:"password,omitempty"`
+	Type     string `json:"type,omitempty"`
+}
+
+type Token struct {
+	Token  string `json:"token"`
+	Expiry int64  `json:"expiry"`
 }

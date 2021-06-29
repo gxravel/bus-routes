@@ -18,6 +18,7 @@ type Config struct {
 	API     API     `mapstructure:"api"`
 	DB      DB      `mapstructure:"db"`
 	Log     Log     `mapstructure:"logger"`
+	JWT     JWT     `mapstructure:"jwt"`
 	Storage Storage `mapstructure:"storage"`
 }
 
@@ -40,6 +41,11 @@ type Log struct {
 	Format string `mapstructure:"format"`
 }
 
+type JWT struct {
+	AccessKey    string        `mapstructure:"access_key"`
+	AccessExpiry time.Duration `mapstructure:"access_expiry"`
+}
+
 type Storage struct {
 	RedisDSN string `mapstructure:"redis_dsn"`
 }
@@ -60,6 +66,10 @@ var defaults = map[string]interface{}{
 
 	"logger.level":  "debug",
 	"logger.format": "json",
+
+	"jwt.access_key":    "jwt_access_very_strong_key",
+	"jwt.access_expiry": time.Minute * 15,
+
 	"storage.redis_dsn": "localhost:6378",
 }
 

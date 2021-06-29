@@ -4,6 +4,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
+	"github.com/gxravel/bus-routes/internal/jwt"
 	"github.com/gxravel/bus-routes/internal/logger"
 )
 
@@ -17,6 +18,7 @@ type BusRoutes struct {
 	routeStore dataprovider.RouteStore
 	userStore  dataprovider.UserStore
 	txer       dataprovider.Txer
+	jwtManager jwt.Manager
 }
 
 func New(
@@ -29,6 +31,7 @@ func New(
 	routeStore dataprovider.RouteStore,
 	userStore dataprovider.UserStore,
 	txer dataprovider.Txer,
+	jwtManager jwt.Manager,
 ) *BusRoutes {
 	return &BusRoutes{
 		config:     config,
@@ -40,5 +43,6 @@ func New(
 		routeStore: routeStore,
 		userStore:  userStore,
 		txer:       txer,
+		jwtManager: jwtManager,
 	}
 }

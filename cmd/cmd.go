@@ -12,6 +12,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/dataprovider/mysql"
+	"github.com/gxravel/bus-routes/internal/jwt"
 	"github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/storage"
 
@@ -70,6 +71,8 @@ func main() {
 	routeStore := mysql.NewRouteStore(db, txer)
 	userStore := mysql.NewUserStore(db, txer)
 
+	jwtManager := jwt.New(storage, cfg.JWT)
+
 	busroutes := busroutes.New(
 		cfg,
 		db,
@@ -80,6 +83,7 @@ func main() {
 		routeStore,
 		userStore,
 		txer,
+		jwtManager,
 	)
 
 	apiServer := handler.NewServer(

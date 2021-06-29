@@ -17,5 +17,10 @@ config:
     address: ":8090"
     read_timeout: 5s
     write_timeout: 5s
+
+  jwt:
+    access_key: jwt_access_very_strong_key
+    access_expiry: 15m
+
   storage:
     redis_dsn: localhost:6378
