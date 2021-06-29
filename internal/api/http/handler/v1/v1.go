@@ -24,3 +24,10 @@ type Route struct {
 	StopID int64 `json:"stop_id"`
 	Step   int8  `json:"step"`
 }
+
+type User struct {
+	ID       int64  `json:"id,omitempty"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Type     string `json:"type"`
+}

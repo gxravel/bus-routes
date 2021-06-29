@@ -21,6 +21,7 @@ func migrations(schema, migrationsTable string) (*migrator.Migrator, error) {
 		migrator.TableName(fmt.Sprintf("%s.%s", schema, migrationsTable)),
 		migrator.Migrations(
 			migrationInit(schema),
+			migrationUser(schema),
 		),
 	)
 }

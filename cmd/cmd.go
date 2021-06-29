@@ -62,6 +62,7 @@ func main() {
 	cityStore := mysql.NewCityStore(db, txer)
 	stopStore := mysql.NewStopStore(db, txer)
 	routeStore := mysql.NewRouteStore(db, txer)
+	userStore := mysql.NewUserStore(db, txer)
 
 	busroutes := busroutes.New(
 		cfg,
@@ -71,6 +72,7 @@ func main() {
 		cityStore,
 		stopStore,
 		routeStore,
+		userStore,
 		txer,
 	)
 

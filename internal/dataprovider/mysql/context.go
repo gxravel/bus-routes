@@ -20,6 +20,7 @@ const (
 	TypeCity
 	TypeStop
 	TypeRoute
+	TypeUser
 )
 
 func execContext(ctx context.Context, qb interface{}, entity string, txer dataprovider.Txer) error {
@@ -75,6 +76,12 @@ func selectContext(ctx context.Context, qb sq.SelectBuilder, entity string, db s
 		return result, nil
 	case TypeRoute:
 		var result = make([]*model.Route, 0)
+		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
+			return nil, errors.Wrapf(err, msg)
+		}
+		return result, nil
+	case TypeUser:
+		var result = make([]*model.User, 0)
 		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
 			return nil, errors.Wrapf(err, msg)
 		}

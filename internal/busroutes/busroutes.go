@@ -15,6 +15,7 @@ type BusRoutes struct {
 	cityStore  dataprovider.CityStore
 	stopStore  dataprovider.StopStore
 	routeStore dataprovider.RouteStore
+	userStore  dataprovider.UserStore
 	txer       dataprovider.Txer
 }
 
@@ -26,6 +27,7 @@ func New(
 	cityStore dataprovider.CityStore,
 	stopStore dataprovider.StopStore,
 	routeStore dataprovider.RouteStore,
+	userStore dataprovider.UserStore,
 	txer dataprovider.Txer,
 ) *BusRoutes {
 	return &BusRoutes{
@@ -36,6 +38,7 @@ func New(
 		cityStore:  cityStore,
 		stopStore:  stopStore,
 		routeStore: routeStore,
+		userStore:  userStore,
 		txer:       txer,
 	}
 }
