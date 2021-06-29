@@ -48,12 +48,23 @@ func userCond(f *dataprovider.UserFilter) sq.Sqlizer {
 }
 
 func (s *UserStore) columns(filter *dataprovider.UserFilter) []string {
-	var result = []string{
+	if filter == nil {
+		return []string{
+			"email",
+			"hashed_password",
+			"type",
+		}
+	}
+	if filter.SelectPassword {
+		return []string{
+			"hashed_password",
+		}
+	}
+	return []string{
 		"id",
 		"email",
 		"type",
 	}
-	return result
 }
 
 func (s *UserStore) ByFilter(ctx context.Context, filter *dataprovider.UserFilter) (*model.User, error) {
