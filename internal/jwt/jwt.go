@@ -21,6 +21,7 @@ type Manager interface {
 	CheckIfExists(ctx context.Context, tokenUUID string) error
 	Delete(ctx context.Context, tokenUUID string) error
 	SetNew(ctx context.Context, user *v1.User) (*v1.Token, error)
+	Verify(ctx context.Context, tokenString string) (*v1.User, error)
 }
 
 // Claims defines JWT token claims.
@@ -118,4 +119,17 @@ func (m *JWT) SetNew(ctx context.Context, user *v1.User) (*v1.Token, error) {
 	}
 
 	return token, nil
+}
+
+// Verify returns the user.
+func (m *JWT) Verify(ctx context.Context, tokenString string) (*v1.User, error) {
+	claims, err := m.Parse(tokenString)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.CheckIfExists(ctx, claims.Id); err != nil {
+		return nil, errors.New("token expired")
+	}
+
+	return claims.User, nil
 }
