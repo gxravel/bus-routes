@@ -40,6 +40,14 @@ func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filt
 	return err == nil, nil
 }
 
+func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
+	dbUser, err := r.userStore.ByFilter(ctx, filter)
+	if err != nil {
+		return "", err
+	}
+	return dbUser.Type, nil
+}
+
 func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) error {
 	return r.userStore.Add(ctx, dbUsers(ctx, users...)...)
 }
