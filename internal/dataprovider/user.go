@@ -17,9 +17,10 @@ type UserStore interface {
 }
 
 type UserFilter struct {
-	IDs            []int
-	Emails         []string
-	SelectPassword bool
+	IDs              []int
+	Emails           []string
+	DoSelectPassword bool
+	DoSelectType     bool
 }
 
 func NewUserFilter() *UserFilter {
@@ -35,7 +36,11 @@ func (f *UserFilter) ByEmails(emails ...string) *UserFilter {
 	f.Emails = emails
 	return f
 }
-func (f *UserFilter) DoSelectPassword() *UserFilter {
-	f.SelectPassword = true
+func (f *UserFilter) SelectPassword() *UserFilter {
+	f.DoSelectPassword = true
+	return f
+}
+func (f *UserFilter) SelectType() *UserFilter {
+	f.DoSelectType = true
 	return f
 }

@@ -52,19 +52,23 @@ func (s *UserStore) columns(filter *dataprovider.UserFilter) []string {
 		return []string{
 			"email",
 			"hashed_password",
+		}
+	}
+	var result []string
+	switch {
+	case filter.DoSelectPassword:
+		result = append(result, "hashed_password")
+		fallthrough
+	case filter.DoSelectType:
+		result = append(result, "type")
+	default:
+		result = []string{
+			"id",
+			"email",
 			"type",
 		}
 	}
-	if filter.SelectPassword {
-		return []string{
-			"hashed_password",
-		}
-	}
-	return []string{
-		"id",
-		"email",
-		"type",
-	}
+	return result
 }
 
 func (s *UserStore) ByFilter(ctx context.Context, filter *dataprovider.UserFilter) (*model.User, error) {
@@ -98,7 +102,7 @@ func (s *UserStore) ListByFilter(ctx context.Context, filter *dataprovider.UserF
 func (s *UserStore) Add(ctx context.Context, users ...*model.User) error {
 	qb := sq.Insert(s.tableName).Columns(s.columns(nil)...)
 	for _, user := range users {
-		qb = qb.Values(user.Email, user.HashedPassword, user.Type)
+		qb = qb.Values(user.Email, user.HashedPassword)
 	}
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
