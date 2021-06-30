@@ -8,6 +8,7 @@ import (
 	api "github.com/gxravel/bus-routes/internal/api/http"
 	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
+	"github.com/gxravel/bus-routes/internal/model"
 
 	"github.com/pkg/errors"
 )
@@ -53,6 +54,8 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Type = model.DefaultUserType
+
 	token, err := s.busroutes.NewJWT(ctx, user)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
@@ -76,7 +79,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter := dataprovider.NewUserFilter().DoSelectPassword().ByEmails(user.Email)
+	filter := dataprovider.NewUserFilter().SelectPassword().ByEmails(user.Email)
 	truePassword, err := s.busroutes.CheckPasswordHash(ctx, user.Password, filter)
 	if err != nil {
 		api.RespondError(ctx, w, http.StatusInternalServerError, err)
@@ -84,6 +87,13 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	if !truePassword {
 		api.RespondError(ctx, w, http.StatusUnauthorized, errors.New("wrong credentials"))
+		return
+	}
+
+	filter = dataprovider.NewUserFilter().SelectType().ByEmails(user.Email)
+	user.Type, err = s.busroutes.GetUserType(ctx, filter)
+	if err != nil {
+		api.RespondError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
 

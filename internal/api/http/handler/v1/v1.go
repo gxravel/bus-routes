@@ -1,5 +1,7 @@
 package v1
 
+import "github.com/gxravel/bus-routes/internal/model"
+
 type Bus struct {
 	ID     int64  `json:"id,omitempty"`
 	City   string `json:"city,omitempty"`
@@ -26,10 +28,10 @@ type Route struct {
 }
 
 type User struct {
-	ID       int64  `json:"id,omitempty"`
-	Email    string `json:"email"`
-	Password string `json:"password,omitempty"`
-	Type     string `json:"type,omitempty"`
+	ID       int64          `json:"id,omitempty"`
+	Email    string         `json:"email"`
+	Password string         `json:"password,omitempty"`
+	Type     model.UserType `json:"type,omitempty"`
 }
 
 type Token struct {
