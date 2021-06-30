@@ -9,6 +9,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
 	"github.com/gxravel/bus-routes/internal/logger"
+	"github.com/gxravel/bus-routes/internal/model"
 
 	"github.com/go-chi/chi"
 )
@@ -60,8 +61,12 @@ func NewServer(
 				r.Delete("/", srv.deleteCity)
 			})
 			r.Route("/buses", func(r chi.Router) {
+
 				r.Get("/", srv.getBuses)
-				r.Post("/", srv.addBuses)
+				r.With(
+					mw.RegisterUserTypes(model.UserAdmin),
+					mw.Auth(busroutes),
+				).Post("/", srv.addBuses)
 			})
 			r.Route("/stops", func(r chi.Router) {
 				r.Get("/", srv.getStops)
