@@ -47,6 +47,10 @@ func toV1Routes(dbRoutes ...*model.Route) []*v1.Route {
 			BusID:  route.BusID,
 			StopID: route.StopID,
 			Step:   route.Step,
+
+			City:    route.City,
+			Address: route.Address,
+			Number:  route.Number,
 		})
 	}
 	return routes
