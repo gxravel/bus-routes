@@ -160,7 +160,7 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 			return errors.Wrap(err, "failed to call RowsAffected")
 		}
 		if num == 0 {
-			return errors.New("no rows affected: wrong id")
+			return errors.New("no rows affected")
 		}
 		return nil
 	}

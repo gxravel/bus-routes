@@ -5,8 +5,11 @@ import (
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
 	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	ierr "github.com/gxravel/bus-routes/internal/errors"
+)
 
-	"github.com/pkg/errors"
+var (
+	errMustProvideRoute = ierr.NewReason(ierr.ErrMustProvide).WithMessage("route")
 )
 
 func (s *Server) getRoutes(w http.ResponseWriter, r *http.Request) {
@@ -14,13 +17,13 @@ func (s *Server) getRoutes(w http.ResponseWriter, r *http.Request) {
 
 	routeFilter, err := api.ParseRouteFilter(r)
 	if err != nil {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	routes, err := s.busroutes.GetRoutes(ctx, routeFilter)
 	if err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
@@ -35,17 +38,17 @@ func (s *Server) addRoutes(w http.ResponseWriter, r *http.Request) {
 
 	var routes = make([]*v1.Route, 0)
 	if err := s.processRequest(r, &routes); err != nil {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	if len(routes) == 0 {
-		api.RespondError(ctx, w, http.StatusBadRequest, errors.New("must provide routes"))
+		api.RespondError(ctx, w, errMustProvideRoute)
 		return
 	}
 
 	if err := s.busroutes.AddRoutes(ctx, routes...); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
@@ -57,17 +60,17 @@ func (s *Server) updateRoute(w http.ResponseWriter, r *http.Request) {
 
 	var route = &v1.Route{}
 	if err := s.processRequest(r, route); err != nil {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	if route.BusID == 0 || route.Step == 0 {
-		api.RespondError(ctx, w, http.StatusBadRequest, errors.New("must provide route"))
+		api.RespondError(ctx, w, errMustProvideRoute)
 		return
 	}
 
 	if err := s.busroutes.UpdateRoute(ctx, route); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
@@ -79,12 +82,12 @@ func (s *Server) deleteRoute(w http.ResponseWriter, r *http.Request) {
 
 	filter, err := api.ParseDeleteRouteFilter(r)
 	if err != nil || len(filter.BusIDs) == 0 && len(filter.Steps) == 0 {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	if err = s.busroutes.DeleteRoute(ctx, filter); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
