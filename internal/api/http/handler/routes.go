@@ -37,15 +37,13 @@ func (s *Server) getRoutes(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getDetailedRoutes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	routeFilter, err := api.ParseRouteFilter(r)
+	routeFilter, err := api.ParseRouteDetailedFilter(r)
 	if err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
 
-	routeFilter = routeFilter.ViewDetailed()
-
-	routes, err := s.busroutes.GetRoutes(ctx, routeFilter)
+	routes, err := s.busroutes.GetDetailedRoutes(ctx, routeFilter)
 	if err != nil {
 		api.RespondError(ctx, w, err)
 		return
