@@ -52,9 +52,9 @@ func routeCond(f *dataprovider.RouteFilter) sq.Sqlizer {
 	return cond
 }
 
-// ByFilter returns route depend on received filters.
-func (s *RouteStore) ByFilter(ctx context.Context, filter *dataprovider.RouteFilter) (*model.Route, error) {
-	routes, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns route depend on received filters.
+func (s *RouteStore) GetByFilter(ctx context.Context, filter *dataprovider.RouteFilter) (*model.Route, error) {
+	routes, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -68,8 +68,8 @@ func (s *RouteStore) ByFilter(ctx context.Context, filter *dataprovider.RouteFil
 	}
 }
 
-// ListByFilter returns routes depend on received filters.
-func (s *RouteStore) ListByFilter(ctx context.Context, filter *dataprovider.RouteFilter) ([]*model.Route, error) {
+// GetListByFilter returns routes depend on received filters.
+func (s *RouteStore) GetListByFilter(ctx context.Context, filter *dataprovider.RouteFilter) ([]*model.Route, error) {
 	qb := sq.
 		Select(
 			"bus_id",

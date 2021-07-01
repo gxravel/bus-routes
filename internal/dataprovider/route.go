@@ -8,8 +8,8 @@ import (
 
 type RouteStore interface {
 	WithTx(*Tx) RouteStore
-	ByFilter(ctx context.Context, filter *RouteFilter) (*model.Route, error)
-	ListByFilter(ctx context.Context, filter *RouteFilter) ([]*model.Route, error)
+	GetByFilter(ctx context.Context, filter *RouteFilter) (*model.Route, error)
+	GetListByFilter(ctx context.Context, filter *RouteFilter) ([]*model.Route, error)
 	Add(ctx context.Context, routes ...*model.Route) error
 	Update(ctx context.Context, route *model.Route) error
 	Delete(ctx context.Context, filter *RouteFilter) error

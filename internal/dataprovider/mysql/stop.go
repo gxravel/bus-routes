@@ -72,9 +72,9 @@ func (s *StopStore) joins(qb sq.SelectBuilder, filter *dataprovider.StopFilter) 
 	return qb
 }
 
-// ByFilter returns stop depend on received filters.
-func (s *StopStore) ByFilter(ctx context.Context, filter *dataprovider.StopFilter) (*model.Stop, error) {
-	stops, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns stop depend on received filters.
+func (s *StopStore) GetByFilter(ctx context.Context, filter *dataprovider.StopFilter) (*model.Stop, error) {
+	stops, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -88,8 +88,8 @@ func (s *StopStore) ByFilter(ctx context.Context, filter *dataprovider.StopFilte
 	}
 }
 
-// ListByFilter returns stops depend on received filters.
-func (s *StopStore) ListByFilter(ctx context.Context, filter *dataprovider.StopFilter) ([]*model.Stop, error) {
+// GetListByFilter returns stops depend on received filters.
+func (s *StopStore) GetListByFilter(ctx context.Context, filter *dataprovider.StopFilter) ([]*model.Stop, error) {
 	qb := sq.
 		Select(s.columns(filter)...).
 		From(s.tableName).

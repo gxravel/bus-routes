@@ -10,10 +10,10 @@ import (
 )
 
 func (r *BusRoutes) NewJWT(ctx context.Context, user *v1.User) (*v1.Token, error) {
-	return r.jwtManager.SetNew(ctx, user)
+	return r.tokenManager.SetNew(ctx, user)
 }
 
-func (r *BusRoutes) UserByToken(ctx context.Context, token string, allowedTypes ...model.UserType) (*v1.User, error) {
+func (r *BusRoutes) GetUserByToken(ctx context.Context, token string, allowedTypes ...model.UserType) (*v1.User, error) {
 	logger := logger.FromContext(ctx).WithStr("token", token)
 
 	if token == "" {
@@ -21,7 +21,7 @@ func (r *BusRoutes) UserByToken(ctx context.Context, token string, allowedTypes 
 		return nil, err
 	}
 
-	user, err := r.jwtManager.Verify(ctx, token)
+	user, err := r.tokenManager.Verify(ctx, token)
 	if err != nil {
 		return nil, err
 	}

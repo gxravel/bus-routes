@@ -74,9 +74,9 @@ func (s *UserStore) columns(filter *dataprovider.UserFilter) []string {
 	return result
 }
 
-// ByFilter returns user depend on received filters.
-func (s *UserStore) ByFilter(ctx context.Context, filter *dataprovider.UserFilter) (*model.User, error) {
-	users, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns user depend on received filters.
+func (s *UserStore) GetByFilter(ctx context.Context, filter *dataprovider.UserFilter) (*model.User, error) {
+	users, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -90,8 +90,8 @@ func (s *UserStore) ByFilter(ctx context.Context, filter *dataprovider.UserFilte
 	}
 }
 
-// ListByFilter returns users depend on received filters.
-func (s *UserStore) ListByFilter(ctx context.Context, filter *dataprovider.UserFilter) ([]*model.User, error) {
+// GetListByFilter returns users depend on received filters.
+func (s *UserStore) GetListByFilter(ctx context.Context, filter *dataprovider.UserFilter) ([]*model.User, error) {
 	qb := sq.
 		Select(s.columns(filter)...).
 		From(s.tableName).

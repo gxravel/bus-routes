@@ -49,9 +49,9 @@ func cityCond(f *dataprovider.CityFilter) sq.Sqlizer {
 	return cond
 }
 
-// ByFilter returns city depend on received filters.
-func (s *CityStore) ByFilter(ctx context.Context, filter *dataprovider.CityFilter) (*model.City, error) {
-	cities, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns city depend on received filters.
+func (s *CityStore) GetByFilter(ctx context.Context, filter *dataprovider.CityFilter) (*model.City, error) {
+	cities, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -65,8 +65,8 @@ func (s *CityStore) ByFilter(ctx context.Context, filter *dataprovider.CityFilte
 	}
 }
 
-// ListByFilter returns cities depend on received filters.
-func (s *CityStore) ListByFilter(ctx context.Context, filter *dataprovider.CityFilter) ([]*model.City, error) {
+// GetListByFilter returns cities depend on received filters.
+func (s *CityStore) GetListByFilter(ctx context.Context, filter *dataprovider.CityFilter) ([]*model.City, error) {
 	qb := sq.
 		Select(
 			"id",
@@ -112,7 +112,7 @@ func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer
 
 	cityStore := NewCityStore(db, txer).WithTx(tx)
 	cityFilter := dataprovider.NewCityFilter().ByNames(names...)
-	cities, err := cityStore.ListByFilter(ctx, cityFilter)
+	cities, err := cityStore.GetListByFilter(ctx, cityFilter)
 	if err != nil {
 		return errors.Wrap(err, "getting cities from city store")
 	}
@@ -129,7 +129,7 @@ func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer
 func CityID(ctx context.Context, name string, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) (int, error) {
 	cityStore := NewCityStore(db, txer).WithTx(tx)
 	cityFilter := dataprovider.NewCityFilter().ByNames(name)
-	city, err := cityStore.ByFilter(ctx, cityFilter)
+	city, err := cityStore.GetByFilter(ctx, cityFilter)
 	if err != nil {
 		return 0, errors.Wrap(err, "getting city from city store")
 	}

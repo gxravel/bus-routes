@@ -9,18 +9,18 @@ import (
 )
 
 func (r *BusRoutes) GetBuses(ctx context.Context, filter *dataprovider.BusFilter) ([]*v1.Bus, error) {
-	dbBuses, err := r.busStore.ListByFilter(ctx, filter)
+	dbBuses, err := r.busStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	return buses(dbBuses...), nil
+	return toV1Buses(dbBuses...), nil
 }
 
 func (r *BusRoutes) AddBuses(ctx context.Context, buses ...*v1.Bus) error {
-	return r.busStore.Add(ctx, dbBuses(buses...)...)
+	return r.busStore.Add(ctx, toDBBuses(buses...)...)
 }
 
-func dbBuses(buses ...*v1.Bus) []*model.Bus {
+func toDBBuses(buses ...*v1.Bus) []*model.Bus {
 	var dbBuses = make([]*model.Bus, 0, len(buses))
 	for _, bus := range buses {
 		dbBuses = append(dbBuses, &model.Bus{
@@ -31,7 +31,7 @@ func dbBuses(buses ...*v1.Bus) []*model.Bus {
 	return dbBuses
 }
 
-func buses(dbBuses ...*model.Bus) []*v1.Bus {
+func toV1Buses(dbBuses ...*model.Bus) []*v1.Bus {
 	var buses = make([]*v1.Bus, 0, len(dbBuses))
 	for _, bus := range dbBuses {
 		buses = append(buses, &v1.Bus{

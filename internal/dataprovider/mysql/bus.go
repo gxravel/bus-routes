@@ -72,9 +72,9 @@ func (s *BusStore) joins(qb sq.SelectBuilder, filter *dataprovider.BusFilter) sq
 	return qb
 }
 
-// ByFilter returns bus depend on received filters.
-func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter) (*model.Bus, error) {
-	buses, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns bus depend on received filters.
+func (s *BusStore) GetByFilter(ctx context.Context, filter *dataprovider.BusFilter) (*model.Bus, error) {
+	buses, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -88,8 +88,8 @@ func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter)
 	}
 }
 
-// ListByFilter returns buses depend on received filters.
-func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFilter) ([]*model.Bus, error) {
+// GetListByFilter returns buses depend on received filters.
+func (s *BusStore) GetListByFilter(ctx context.Context, filter *dataprovider.BusFilter) ([]*model.Bus, error) {
 	qb := sq.
 		Select(s.columns(filter)...).
 		From(s.tableName).

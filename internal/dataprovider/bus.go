@@ -8,8 +8,8 @@ import (
 
 type BusStore interface {
 	WithTx(*Tx) BusStore
-	ByFilter(ctx context.Context, filter *BusFilter) (*model.Bus, error)
-	ListByFilter(ctx context.Context, filter *BusFilter) ([]*model.Bus, error)
+	GetByFilter(ctx context.Context, filter *BusFilter) (*model.Bus, error)
+	GetListByFilter(ctx context.Context, filter *BusFilter) ([]*model.Bus, error)
 	Add(ctx context.Context, buses ...*model.Bus) error
 }
 

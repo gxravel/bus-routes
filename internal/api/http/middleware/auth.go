@@ -32,7 +32,7 @@ func Auth(busroutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
 			allowedUserTypes := busroutescontext.GetUserTypes(ctx)
 			token := getAuthToken(r)
 
-			user, err := busroutes.UserByToken(ctx, token, allowedUserTypes...)
+			user, err := busroutes.GetUserByToken(ctx, token, allowedUserTypes...)
 			if err != nil {
 				api.RespondError(ctx, w, err)
 				return

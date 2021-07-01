@@ -8,8 +8,8 @@ import (
 
 type UserStore interface {
 	WithTx(*Tx) UserStore
-	ByFilter(ctx context.Context, filter *UserFilter) (*model.User, error)
-	ListByFilter(ctx context.Context, filter *UserFilter) ([]*model.User, error)
+	GetByFilter(ctx context.Context, filter *UserFilter) (*model.User, error)
+	GetListByFilter(ctx context.Context, filter *UserFilter) ([]*model.User, error)
 	Add(ctx context.Context, users ...*model.User) error
 	Delete(ctx context.Context, filter *UserFilter) error
 	Update(ctx context.Context, user *model.User) error
