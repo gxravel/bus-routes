@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/config"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 	"github.com/gxravel/bus-routes/internal/logger"
+	"github.com/gxravel/bus-routes/internal/model"
 	"github.com/gxravel/bus-routes/internal/storage"
 
 	"github.com/dgrijalva/jwt-go"
@@ -22,13 +22,20 @@ type Manager interface {
 	Parse(tokenString string) (*Claims, error)
 	CheckIfExists(ctx context.Context, tokenUUID string) error
 	Delete(ctx context.Context, tokenUUID string) error
-	SetNew(ctx context.Context, user *v1.User) (*v1.Token, error)
-	Verify(ctx context.Context, tokenString string) (*v1.User, error)
+	SetNew(ctx context.Context, user *User) (*Details, error)
+	Verify(ctx context.Context, tokenString string) (*User, error)
+}
+
+// User describes user built into the token
+type User struct {
+	ID    int64
+	Email string
+	Type  model.UserType
 }
 
 // Claims defines JWT token claims.
 type Claims struct {
-	User *v1.User `json:"user"`
+	User *User `json:"user"`
 	jwt.StandardClaims
 }
 
@@ -51,7 +58,7 @@ func New(client *storage.Client, config config.Config) *JWT {
 }
 
 // create creates the HS512 JWT token with claims.
-func create(ctx context.Context, user *v1.User, expiry time.Duration, key string) (*Details, error) {
+func create(ctx context.Context, user *User, expiry time.Duration, key string) (*Details, error) {
 	now := time.Now()
 	token := &Details{}
 	token.Expiry = now.Add(expiry).Unix()
@@ -112,7 +119,7 @@ func (m *JWT) Delete(ctx context.Context, tokenUUID string) error {
 }
 
 // SetNew returns the access token.
-func (m *JWT) SetNew(ctx context.Context, user *v1.User) (*v1.Token, error) {
+func (m *JWT) SetNew(ctx context.Context, user *User) (*Details, error) {
 	logger := logger.FromContext(ctx)
 	accessToken, err := create(ctx, user, m.config.JWT.AccessExpiry, m.config.JWT.AccessKey)
 	if err != nil {
@@ -123,16 +130,11 @@ func (m *JWT) SetNew(ctx context.Context, user *v1.User) (*v1.Token, error) {
 		logger.WithErr(err).Error("failed to save token to storage")
 		return nil, err
 	}
-	token := &v1.Token{
-		Token:  accessToken.String,
-		Expiry: accessToken.Expiry,
-	}
-
-	return token, nil
+	return accessToken, nil
 }
 
 // Verify verifies token, and if it presents in storage returns the user.
-func (m *JWT) Verify(ctx context.Context, tokenString string) (*v1.User, error) {
+func (m *JWT) Verify(ctx context.Context, tokenString string) (*User, error) {
 	claims, err := m.Parse(tokenString)
 	if err != nil {
 		return nil, err
