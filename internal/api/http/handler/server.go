@@ -61,11 +61,10 @@ func NewServer(
 				r.Delete("/", srv.deleteCity)
 			})
 			r.Route("/buses", func(r chi.Router) {
-
 				r.Get("/", srv.getBuses)
 				r.With(
 					mw.RegisterUserTypes(model.UserAdmin),
-					mw.Auth(busroutes),
+					mw.Auth(srv.busroutes),
 				).Post("/", srv.addBuses)
 			})
 			r.Route("/stops", func(r chi.Router) {
@@ -79,6 +78,13 @@ func NewServer(
 				r.Post("/", srv.addRoutes)
 				r.Put("/", srv.updateRoute)
 				r.Delete("/", srv.deleteRoute)
+				r.Route("/detailed", func(r chi.Router) {
+					r.Use(
+						mw.RegisterUserTypes(model.UserService, model.UserAdmin),
+						mw.Auth(srv.busroutes),
+					)
+					r.Get("/", srv.getDetailedRoutes)
+				})
 			})
 		})
 	})

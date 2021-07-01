@@ -33,6 +33,30 @@ func (s *Server) getRoutes(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// getDetailedRoutes returns the routes detailed view: city, address, number instead of ids.
+func (s *Server) getDetailedRoutes(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	routeFilter, err := api.ParseRouteFilter(r)
+	if err != nil {
+		api.RespondError(ctx, w, err)
+		return
+	}
+
+	routeFilter = routeFilter.ViewDetailed()
+
+	routes, err := s.busroutes.GetRoutes(ctx, routeFilter)
+	if err != nil {
+		api.RespondError(ctx, w, err)
+		return
+	}
+
+	api.RespondDataOK(ctx, w, api.RangeItemsResponse{
+		Items: routes,
+		Total: int64(len(routes)),
+	})
+}
+
 func (s *Server) addRoutes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
