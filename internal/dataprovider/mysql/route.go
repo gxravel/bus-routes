@@ -53,20 +53,20 @@ func routeCond(f *dataprovider.RouteFilter) sq.Sqlizer {
 }
 
 func (s *RouteStore) columns(filter *dataprovider.RouteFilter) []string {
-	var result = []string{
-		"bus_id",
-		"stop_id",
-		"step",
-	}
-	if filter.DetailedView {
+	if filter != nil && filter.DetailedView {
 		return []string{
+			"route.bus_id as bus_id",
 			"city.name as city",
 			"num",
 			"step",
 			"address",
 		}
 	}
-	return result
+	return []string{
+		"bus_id",
+		"stop_id",
+		"step",
+	}
 }
 
 func (s *RouteStore) joins(qb sq.SelectBuilder, filter *dataprovider.RouteFilter) sq.SelectBuilder {
@@ -75,6 +75,11 @@ func (s *RouteStore) joins(qb sq.SelectBuilder, filter *dataprovider.RouteFilter
 			Join("stop ON route.stop_id = stop.id").
 			Join("city ON bus.city_id = city.id")
 	}
+	return qb
+}
+
+func (s *RouteStore) ordersBy(qb sq.SelectBuilder, filter *dataprovider.RouteFilter) sq.SelectBuilder {
+	qb = qb.OrderBy("bus_id", "step")
 	return qb
 }
 
@@ -99,10 +104,10 @@ func (s *RouteStore) GetListByFilter(ctx context.Context, filter *dataprovider.R
 	qb := sq.
 		Select(s.columns(filter)...).
 		From(s.tableName).
-		Where(routeCond(filter)).
-		OrderBy("step")
+		Where(routeCond(filter))
 
 	qb = s.joins(qb, filter)
+	qb = s.ordersBy(qb, filter)
 
 	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeRoute)
 	if err != nil {
@@ -113,7 +118,7 @@ func (s *RouteStore) GetListByFilter(ctx context.Context, filter *dataprovider.R
 
 // Add creates new routes.
 func (s *RouteStore) Add(ctx context.Context, routes ...*model.Route) error {
-	qb := sq.Insert(s.tableName).Columns("bus_id", "stop_id", "step")
+	qb := sq.Insert(s.tableName).Columns(s.columns(nil)...)
 	for _, route := range routes {
 		qb = qb.Values(route.BusID, route.StopID, route.Step)
 	}
