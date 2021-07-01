@@ -57,14 +57,6 @@ func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFi
 	return dbUser.Type, nil
 }
 
-func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
-	dbUser, err := r.userStore.ByFilter(ctx, filter)
-	if err != nil {
-		return "", err
-	}
-	return dbUser.Type, nil
-}
-
 func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) error {
 	err := r.userStore.Add(ctx, dbUsers(ctx, users...)...)
 	if err != nil {
