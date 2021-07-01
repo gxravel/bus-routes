@@ -22,7 +22,7 @@ func RegisterUserTypes(types ...model.UserType) func(http.Handler) http.Handler 
 	}
 }
 
-func Auth(busRoutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
+func Auth(busroutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -30,19 +30,10 @@ func Auth(busRoutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
 			allowedUserTypes := busroutescontext.GetUserTypes(ctx)
 			token := getAuthToken(r)
 
-			user, err := busRoutes.UserByToken(ctx, token, allowedUserTypes...)
+			user, err := busroutes.UserByToken(ctx, token, allowedUserTypes...)
 			if err != nil {
-				switch err {
-				case busroutes.ErrPermissionDenied:
-					api.RespondError(ctx, w, http.StatusForbidden, err)
-					return
-				case busroutes.ErrTokenExpired:
-					api.RespondError(ctx, w, http.StatusUnauthorized, err)
-					return
-				default:
-					api.RespondError(ctx, w, http.StatusBadRequest, err)
-					return
-				}
+				api.RespondError(ctx, w, err)
+				return
 			}
 
 			ctx = context.WithValue(ctx, busroutescontext.UserKey, user)

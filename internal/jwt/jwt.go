@@ -2,14 +2,16 @@ package jwt
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/config"
+	ierr "github.com/gxravel/bus-routes/internal/errors"
+	"github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/storage"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -49,7 +51,7 @@ func New(client *storage.Client, config config.JWT) *JWT {
 }
 
 // create creates the HS512 JWT token with claims.
-func create(user *v1.User, expiry time.Duration, key string) (*Details, error) {
+func create(ctx context.Context, user *v1.User, expiry time.Duration, key string) (*Details, error) {
 	now := time.Now()
 	token := &Details{}
 	token.Expiry = now.Add(expiry).Unix()
@@ -66,6 +68,9 @@ func create(user *v1.User, expiry time.Duration, key string) (*Details, error) {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	var err error
 	token.String, err = jwtToken.SignedString([]byte(key))
+	if err != nil {
+		logger.FromContext(ctx).WithErr(err).Fatal("failed to sign jwt token with the key")
+	}
 	return token, err
 }
 
@@ -75,14 +80,17 @@ func (m *JWT) Parse(tokenString string) (*Claims, error) {
 
 	jwtToken, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.Errorf("unexpected signing method: %v", t.Header["alg"])
+			return nil, ierr.NewReason(ierr.ErrInvalidJWT).WithMessage(fmt.Sprintf("unexpected signing method: %v", t.Header["alg"]))
 		}
 		return key, nil
 	})
+	if err != nil || !jwtToken.Valid {
+		return nil, ierr.NewReason(ierr.ErrInvalidToken).WithMessage("token validation failed")
+	}
 
 	claims, ok := jwtToken.Claims.(*Claims)
-	if !ok || !jwtToken.Valid {
-		return nil, errors.New("couldn't handle this token: " + err.Error())
+	if !ok {
+		return nil, ierr.NewReason(ierr.ErrInvalidToken).WithMessage("failed to get claims")
 	}
 	return claims, nil
 }
@@ -105,12 +113,14 @@ func (m *JWT) Delete(ctx context.Context, tokenUUID string) error {
 
 // SetNew returns the access token.
 func (m *JWT) SetNew(ctx context.Context, user *v1.User) (*v1.Token, error) {
-	accessToken, err := create(user, m.config.AccessExpiry, m.config.AccessKey)
+	logger := logger.FromContext(ctx)
+	accessToken, err := create(ctx, user, m.config.AccessExpiry, m.config.AccessKey)
 	if err != nil {
 		return nil, err
 	}
 	err = m.save(ctx, accessToken)
 	if err != nil {
+		logger.WithErr(err).Error("failed to save token to storage")
 		return nil, err
 	}
 	token := &v1.Token{
@@ -128,7 +138,7 @@ func (m *JWT) Verify(ctx context.Context, tokenString string) (*v1.User, error) 
 		return nil, err
 	}
 	if err := m.CheckIfExists(ctx, claims.Id); err != nil {
-		return nil, errors.New("token expired")
+		return nil, ierr.NewReason(ierr.ErrTokenExpired)
 	}
 
 	return claims.User, nil

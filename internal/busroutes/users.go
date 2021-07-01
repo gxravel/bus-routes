@@ -5,6 +5,7 @@ import (
 
 	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
+	ierr "github.com/gxravel/bus-routes/internal/errors"
 	"github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 
@@ -20,7 +21,10 @@ func hashPassword(password string) ([]byte, error) {
 }
 
 func checkPasswordHash(password string, hashedPassword []byte) error {
-	return bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(password)); err != nil {
+		return ierr.NewReason(ierr.ErrWrongCredentials)
+	}
+	return nil
 }
 
 func (r *BusRoutes) GetUsers(ctx context.Context, filter *dataprovider.UserFilter) ([]*v1.User, error) {
@@ -31,13 +35,26 @@ func (r *BusRoutes) GetUsers(ctx context.Context, filter *dataprovider.UserFilte
 	return users(dbUsers...), nil
 }
 
-func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filter *dataprovider.UserFilter) (bool, error) {
+func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filter *dataprovider.UserFilter) error {
 	dbUser, err := r.userStore.ByFilter(ctx, filter)
 	if err != nil {
-		return false, err
+		return err
 	}
-	err = checkPasswordHash(password, dbUser.HashedPassword)
-	return err == nil, nil
+	if dbUser == nil {
+		return ierr.NewReason(ierr.ErrWrongCredentials)
+	}
+	return checkPasswordHash(password, dbUser.HashedPassword)
+}
+
+func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
+	dbUser, err := r.userStore.ByFilter(ctx, filter)
+	if err != nil {
+		return "", err
+	}
+	if dbUser == nil {
+		return "", ierr.NewReason(ierr.ErrWrongCredentials)
+	}
+	return dbUser.Type, nil
 }
 
 func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
@@ -49,7 +66,12 @@ func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFi
 }
 
 func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) error {
-	return r.userStore.Add(ctx, dbUsers(ctx, users...)...)
+	err := r.userStore.Add(ctx, dbUsers(ctx, users...)...)
+	if err != nil {
+		err = ierr.CheckDuplicate(err, "email")
+		return err
+	}
+	return nil
 }
 
 func (r *BusRoutes) UpdateUser(ctx context.Context, user *v1.User) error {

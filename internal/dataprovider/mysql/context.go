@@ -39,7 +39,7 @@ func execContext(ctx context.Context, qb interface{}, entity string, txer datapr
 			return errors.Wrap(err, "failed to call RowsAffected")
 		}
 		if num == 0 {
-			return errors.New("no rows affected: wrong id")
+			return errors.New("no rows affected")
 		}
 		return nil
 	}

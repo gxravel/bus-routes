@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	ierr "github.com/gxravel/bus-routes/internal/errors"
 	"github.com/gxravel/bus-routes/internal/logger"
 )
 
@@ -19,12 +20,8 @@ type RangeItemsResponse struct {
 }
 
 type Response struct {
-	Data  interface{} `json:"data,omitempty"`
-	Error *Error      `json:"error,omitempty"`
-}
-
-type Error struct {
-	Msg string `json:"msg"`
+	Data  interface{}    `json:"data,omitempty"`
+	Error *ierr.APIError `json:"error,omitempty"`
 }
 
 func RespondJSON(ctx context.Context, w http.ResponseWriter, code int, data interface{}) {
@@ -65,8 +62,13 @@ func RespondData(ctx context.Context, w http.ResponseWriter, code int, val inter
 	})
 }
 
-func RespondError(ctx context.Context, w http.ResponseWriter, code int, err error) {
+func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
+	reason := ierr.ConvertToReason(err)
+	code := ierr.ResolveStatusCode(ierr.Cause(reason.Err))
+
 	RespondJSON(ctx, w, code, &Response{
-		Error: &Error{Msg: err.Error()},
+		Error: &ierr.APIError{
+			Reason: reason,
+		},
 	})
 }

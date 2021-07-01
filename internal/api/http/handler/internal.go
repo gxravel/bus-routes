@@ -10,7 +10,7 @@ func (s *Server) getHealth(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := s.busroutes.IsHealthy(ctx); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 

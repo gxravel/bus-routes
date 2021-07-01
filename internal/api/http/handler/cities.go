@@ -5,8 +5,11 @@ import (
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
 	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	ierr "github.com/gxravel/bus-routes/internal/errors"
+)
 
-	"github.com/pkg/errors"
+var (
+	errMustProvideCity = ierr.NewReason(ierr.ErrMustProvide).WithMessage("city")
 )
 
 func (s *Server) getCities(w http.ResponseWriter, r *http.Request) {
@@ -14,13 +17,13 @@ func (s *Server) getCities(w http.ResponseWriter, r *http.Request) {
 
 	cityFilter, err := api.ParseCityFilter(r)
 	if err != nil {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	cities, err := s.busroutes.GetCities(ctx, cityFilter)
 	if err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
@@ -35,17 +38,17 @@ func (s *Server) addCities(w http.ResponseWriter, r *http.Request) {
 
 	var cities = make([]*v1.City, 0)
 	if err := s.processRequest(r, &cities); err != nil {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	if len(cities) == 0 {
-		api.RespondError(ctx, w, http.StatusBadRequest, errors.New("must provide cities"))
+		api.RespondError(ctx, w, errMustProvideCity)
 		return
 	}
 
 	if err := s.busroutes.AddCities(ctx, cities...); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
@@ -57,17 +60,17 @@ func (s *Server) updateCity(w http.ResponseWriter, r *http.Request) {
 
 	var city = &v1.City{}
 	if err := s.processRequest(r, city); err != nil {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	if city.ID == 0 {
-		api.RespondError(ctx, w, http.StatusBadRequest, errors.New("must provide city"))
+		api.RespondError(ctx, w, errMustProvideCity)
 		return
 	}
 
 	if err := s.busroutes.UpdateCity(ctx, city); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
@@ -79,12 +82,12 @@ func (s *Server) deleteCity(w http.ResponseWriter, r *http.Request) {
 
 	filter, err := api.ParseDeleteCityFilter(r)
 	if err != nil || len(filter.IDs) == 0 && len(filter.Names) == 0 {
-		api.RespondError(ctx, w, http.StatusBadRequest, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
 	if err = s.busroutes.DeleteCity(ctx, filter); err != nil {
-		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		api.RespondError(ctx, w, err)
 		return
 	}
 
