@@ -28,15 +28,15 @@ func checkPasswordHash(password string, hashedPassword []byte) error {
 }
 
 func (r *BusRoutes) GetUsers(ctx context.Context, filter *dataprovider.UserFilter) ([]*v1.User, error) {
-	dbUsers, err := r.userStore.ListByFilter(ctx, filter)
+	dbUsers, err := r.userStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	return users(dbUsers...), nil
+	return toV1Users(dbUsers...), nil
 }
 
 func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filter *dataprovider.UserFilter) error {
-	dbUser, err := r.userStore.ByFilter(ctx, filter)
+	dbUser, err := r.userStore.GetByFilter(ctx, filter)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filt
 }
 
 func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
-	dbUser, err := r.userStore.ByFilter(ctx, filter)
+	dbUser, err := r.userStore.GetByFilter(ctx, filter)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +58,7 @@ func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFi
 }
 
 func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) error {
-	err := r.userStore.Add(ctx, dbUsers(ctx, users...)...)
+	err := r.userStore.Add(ctx, toDBUsers(ctx, users...)...)
 	if err != nil {
 		err = ierr.CheckDuplicate(err, "email")
 		return err
@@ -67,7 +67,7 @@ func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) error {
 }
 
 func (r *BusRoutes) UpdateUser(ctx context.Context, user *v1.User) error {
-	return r.userStore.Update(ctx, dbUsers(ctx, user)[0])
+	return r.userStore.Update(ctx, toDBUsers(ctx, user)[0])
 }
 
 func (r *BusRoutes) UpdateUserPassword(ctx context.Context, hashedPassword []byte, filter *dataprovider.UserFilter) error {
@@ -78,7 +78,7 @@ func (r *BusRoutes) DeleteUser(ctx context.Context, filter *dataprovider.UserFil
 	return r.userStore.Delete(ctx, filter)
 }
 
-func dbUsers(ctx context.Context, users ...*v1.User) []*model.User {
+func toDBUsers(ctx context.Context, users ...*v1.User) []*model.User {
 	var dbUsers = make([]*model.User, 0, len(users))
 	logger := logger.FromContext(ctx)
 	for _, user := range users {
@@ -96,7 +96,7 @@ func dbUsers(ctx context.Context, users ...*v1.User) []*model.User {
 	return dbUsers
 }
 
-func users(dbUsers ...*model.User) []*v1.User {
+func toV1Users(dbUsers ...*model.User) []*v1.User {
 	var users = make([]*v1.User, 0, len(dbUsers))
 	for _, user := range dbUsers {
 		users = append(users, &v1.User{

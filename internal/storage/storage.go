@@ -14,9 +14,9 @@ type Client struct {
 }
 
 // NewClient creates new instance of Client.
-func NewClient(cfg config.Storage) (*Client, error) {
+func NewClient(cfg config.Config) (*Client, error) {
 	cli := redis.NewClient(&redis.Options{
-		Addr: cfg.RedisDSN,
+		Addr: cfg.Storage.RedisDSN,
 	})
 	ctx := context.Background()
 	_, err := cli.Ping(ctx).Result()

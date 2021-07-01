@@ -15,38 +15,38 @@ type Config struct {
 	Environment     string        `mapstructure:"environment"`
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 
-	API     API     `mapstructure:"api"`
-	DB      DB      `mapstructure:"db"`
-	Log     Log     `mapstructure:"logger"`
-	JWT     JWT     `mapstructure:"jwt"`
-	Storage Storage `mapstructure:"storage"`
+	API     api     `mapstructure:"api"`
+	DB      db      `mapstructure:"db"`
+	Log     log     `mapstructure:"logger"`
+	JWT     jwt     `mapstructure:"jwt"`
+	Storage storage `mapstructure:"storage"`
 }
 
-type API struct {
+type api struct {
 	ServeSwagger bool          `mapstructure:"serve_swagger"`
 	Address      string        `mapstructure:"address"`
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
 }
 
-type DB struct {
+type db struct {
 	URL          string `mapstructure:"url"`
 	SchemaName   string `mapstructure:"schema_name"`
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 }
 
-type Log struct {
+type log struct {
 	Level  string `mapstructure:"level"`
 	Format string `mapstructure:"format"`
 }
 
-type JWT struct {
+type jwt struct {
 	AccessKey    string        `mapstructure:"access_key"`
 	AccessExpiry time.Duration `mapstructure:"access_expiry"`
 }
 
-type Storage struct {
+type storage struct {
 	RedisDSN string `mapstructure:"redis_dsn"`
 }
 

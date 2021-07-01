@@ -23,6 +23,7 @@ const (
 	TypeUser
 )
 
+// execContext builds the query that doesn't return rows and executes it.
 func execContext(ctx context.Context, qb interface{}, entity string, txer dataprovider.Txer) error {
 	query, args, codewords, err := toSql(ctx, qb, entity)
 	if err != nil {
@@ -47,6 +48,7 @@ func execContext(ctx context.Context, qb interface{}, entity string, txer datapr
 	return dataprovider.BeginAutoCommitedTx(ctx, txer, f)
 }
 
+// selectContext executes a query depend on ResultType
 func selectContext(ctx context.Context, qb sq.SelectBuilder, entity string, db sqlx.ExtContext, resultType ResultType) (interface{}, error) {
 	query, args, codewords, err := toSql(ctx, qb, entity)
 	if err != nil {
@@ -91,6 +93,7 @@ func selectContext(ctx context.Context, qb sq.SelectBuilder, entity string, db s
 	}
 }
 
+// toSql builds the query into a SQL string and bound args and logs the result.
 func toSql(ctx context.Context, qb interface{}, entity string) (string, []interface{}, string, error) {
 	var (
 		query     string

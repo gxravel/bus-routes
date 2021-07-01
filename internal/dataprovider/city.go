@@ -8,8 +8,8 @@ import (
 
 type CityStore interface {
 	WithTx(*Tx) CityStore
-	ByFilter(ctx context.Context, filter *CityFilter) (*model.City, error)
-	ListByFilter(ctx context.Context, filter *CityFilter) ([]*model.City, error)
+	GetByFilter(ctx context.Context, filter *CityFilter) (*model.City, error)
+	GetListByFilter(ctx context.Context, filter *CityFilter) ([]*model.City, error)
 	Add(ctx context.Context, cities ...*model.City) error
 	Delete(ctx context.Context, filter *CityFilter) error
 	Update(ctx context.Context, city *model.City) error

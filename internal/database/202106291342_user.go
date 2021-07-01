@@ -34,5 +34,5 @@ func migrationUser(schema string) *migrator.Migration {
 }
 
 /* ROLLBACK SQL
-
- */
+DROP TABLE IF EXISTS user;
+*/

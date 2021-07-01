@@ -17,17 +17,16 @@ var (
 	regEmail = regexp.MustCompile(`^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$`)
 )
 
-func validateUserCredentials(user *v1.User) (err error) {
+// validateUserCredentials validates user password and email, and transfroms the email to lowercase.
+func validateUserCredentials(user *v1.User) error {
 	if !regPass.MatchString(user.Password) {
-		err = ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid password: min length - 4")
-		return
+		return ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid password: min length - 4")
 	}
 	if !regEmail.MatchString(user.Email) {
-		err = ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid email")
-		return
+		return ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid email")
 	}
 	user.Email = strings.ToLower(user.Email)
-	return
+	return nil
 }
 
 func (s *Server) signup(w http.ResponseWriter, r *http.Request) {

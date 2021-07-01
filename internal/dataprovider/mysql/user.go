@@ -11,12 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// UserStore is user mysql store.
 type UserStore struct {
 	db        sqlx.ExtContext
 	txer      dataprovider.Txer
 	tableName string
 }
 
+// NewUserStore creates new instance of UserStore.
 func NewUserStore(db sqlx.ExtContext, txer dataprovider.Txer) *UserStore {
 	return &UserStore{
 		db:        db,
@@ -25,6 +27,7 @@ func NewUserStore(db sqlx.ExtContext, txer dataprovider.Txer) *UserStore {
 	}
 }
 
+// WithTx sets transaction as active connection.
 func (s *UserStore) WithTx(tx *dataprovider.Tx) dataprovider.UserStore {
 	return &UserStore{
 		db:        tx,
@@ -71,8 +74,9 @@ func (s *UserStore) columns(filter *dataprovider.UserFilter) []string {
 	return result
 }
 
-func (s *UserStore) ByFilter(ctx context.Context, filter *dataprovider.UserFilter) (*model.User, error) {
-	users, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns user depend on received filters.
+func (s *UserStore) GetByFilter(ctx context.Context, filter *dataprovider.UserFilter) (*model.User, error) {
+	users, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -86,7 +90,8 @@ func (s *UserStore) ByFilter(ctx context.Context, filter *dataprovider.UserFilte
 	}
 }
 
-func (s *UserStore) ListByFilter(ctx context.Context, filter *dataprovider.UserFilter) ([]*model.User, error) {
+// GetListByFilter returns users depend on received filters.
+func (s *UserStore) GetListByFilter(ctx context.Context, filter *dataprovider.UserFilter) ([]*model.User, error) {
 	qb := sq.
 		Select(s.columns(filter)...).
 		From(s.tableName).
@@ -99,6 +104,7 @@ func (s *UserStore) ListByFilter(ctx context.Context, filter *dataprovider.UserF
 	return result.([]*model.User), nil
 }
 
+// Add creates new users.
 func (s *UserStore) Add(ctx context.Context, users ...*model.User) error {
 	qb := sq.Insert(s.tableName).Columns(s.columns(nil)...)
 	for _, user := range users {
@@ -107,16 +113,19 @@ func (s *UserStore) Add(ctx context.Context, users ...*model.User) error {
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
-func (s *UserStore) Delete(ctx context.Context, filter *dataprovider.UserFilter) error {
-	qb := sq.Delete(s.tableName).Where(userCond(filter))
-	return execContext(ctx, qb, s.tableName, s.txer)
-}
-
+// Update updates user's email and type.
 func (s *UserStore) Update(ctx context.Context, user *model.User) error {
 	qb := sq.Update(s.tableName).Set("email", user.Email).Set("type", user.Type).Where(sq.Eq{"id": user.ID})
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
+// Delete deletes user depend on received filter.
+func (s *UserStore) Delete(ctx context.Context, filter *dataprovider.UserFilter) error {
+	qb := sq.Delete(s.tableName).Where(userCond(filter))
+	return execContext(ctx, qb, s.tableName, s.txer)
+}
+
+// UpdatePassword updates user's hashed_password.
 func (s *UserStore) UpdatePassword(ctx context.Context, hashedPassword []byte, filter *dataprovider.UserFilter) error {
 	qb := sq.Update(s.tableName).Set("hashed_password", hashedPassword).Where(userCond(filter))
 	return execContext(ctx, qb, s.tableName, s.txer)

@@ -11,12 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// CityStore is city mysql store.
 type CityStore struct {
 	db        sqlx.ExtContext
 	txer      dataprovider.Txer
 	tableName string
 }
 
+// NewCityStore creates new instance of CityStore.
 func NewCityStore(db sqlx.ExtContext, txer dataprovider.Txer) *CityStore {
 	return &CityStore{
 		db:        db,
@@ -25,6 +27,7 @@ func NewCityStore(db sqlx.ExtContext, txer dataprovider.Txer) *CityStore {
 	}
 }
 
+// WithTx sets transaction as active connection.
 func (s *CityStore) WithTx(tx *dataprovider.Tx) dataprovider.CityStore {
 	return &CityStore{
 		db:        tx,
@@ -46,8 +49,9 @@ func cityCond(f *dataprovider.CityFilter) sq.Sqlizer {
 	return cond
 }
 
-func (s *CityStore) ByFilter(ctx context.Context, filter *dataprovider.CityFilter) (*model.City, error) {
-	cities, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns city depend on received filters.
+func (s *CityStore) GetByFilter(ctx context.Context, filter *dataprovider.CityFilter) (*model.City, error) {
+	cities, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -61,7 +65,8 @@ func (s *CityStore) ByFilter(ctx context.Context, filter *dataprovider.CityFilte
 	}
 }
 
-func (s *CityStore) ListByFilter(ctx context.Context, filter *dataprovider.CityFilter) ([]*model.City, error) {
+// GetListByFilter returns cities depend on received filters.
+func (s *CityStore) GetListByFilter(ctx context.Context, filter *dataprovider.CityFilter) ([]*model.City, error) {
 	qb := sq.
 		Select(
 			"id",
@@ -77,6 +82,7 @@ func (s *CityStore) ListByFilter(ctx context.Context, filter *dataprovider.CityF
 	return result.([]*model.City), nil
 }
 
+// Add creates new cities.
 func (s *CityStore) Add(ctx context.Context, cities ...*model.City) error {
 	qb := sq.Insert(s.tableName).Columns("name")
 	for _, city := range cities {
@@ -85,16 +91,19 @@ func (s *CityStore) Add(ctx context.Context, cities ...*model.City) error {
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
+// Update updates city name.
 func (s *CityStore) Update(ctx context.Context, city *model.City) error {
 	qb := sq.Update(s.tableName).Set("name", city.Name).Where(sq.Eq{"id": city.ID})
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
+// Delete deletes city depend on received filter.
 func (s *CityStore) Delete(ctx context.Context, filter *dataprovider.CityFilter) error {
 	qb := sq.Delete(s.tableName).Where(cityCond(filter))
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
+// CitiesIDs return the ids as a map of names.
 func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) error {
 	var names = make([]string, 0, len(ids))
 	for name := range ids {
@@ -103,7 +112,7 @@ func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer
 
 	cityStore := NewCityStore(db, txer).WithTx(tx)
 	cityFilter := dataprovider.NewCityFilter().ByNames(names...)
-	cities, err := cityStore.ListByFilter(ctx, cityFilter)
+	cities, err := cityStore.GetListByFilter(ctx, cityFilter)
 	if err != nil {
 		return errors.Wrap(err, "getting cities from city store")
 	}
@@ -116,10 +125,11 @@ func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer
 	return nil
 }
 
+// CityID returns the id by name.
 func CityID(ctx context.Context, name string, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) (int, error) {
 	cityStore := NewCityStore(db, txer).WithTx(tx)
 	cityFilter := dataprovider.NewCityFilter().ByNames(name)
-	city, err := cityStore.ByFilter(ctx, cityFilter)
+	city, err := cityStore.GetByFilter(ctx, cityFilter)
 	if err != nil {
 		return 0, errors.Wrap(err, "getting city from city store")
 	}

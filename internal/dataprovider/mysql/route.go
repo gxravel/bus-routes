@@ -11,12 +11,14 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// RouteStore is route mysql store.
 type RouteStore struct {
 	db        sqlx.ExtContext
 	txer      dataprovider.Txer
 	tableName string
 }
 
+// NewRouteStore creates new instance of RouteStore.
 func NewRouteStore(db sqlx.ExtContext, txer dataprovider.Txer) *RouteStore {
 	return &RouteStore{
 		db:        db,
@@ -25,6 +27,7 @@ func NewRouteStore(db sqlx.ExtContext, txer dataprovider.Txer) *RouteStore {
 	}
 }
 
+// WithTx sets transaction as active connection.
 func (s *RouteStore) WithTx(tx *dataprovider.Tx) dataprovider.RouteStore {
 	return &RouteStore{
 		db:        tx,
@@ -49,8 +52,9 @@ func routeCond(f *dataprovider.RouteFilter) sq.Sqlizer {
 	return cond
 }
 
-func (s *RouteStore) ByFilter(ctx context.Context, filter *dataprovider.RouteFilter) (*model.Route, error) {
-	routes, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns route depend on received filters.
+func (s *RouteStore) GetByFilter(ctx context.Context, filter *dataprovider.RouteFilter) (*model.Route, error) {
+	routes, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -64,7 +68,8 @@ func (s *RouteStore) ByFilter(ctx context.Context, filter *dataprovider.RouteFil
 	}
 }
 
-func (s *RouteStore) ListByFilter(ctx context.Context, filter *dataprovider.RouteFilter) ([]*model.Route, error) {
+// GetListByFilter returns routes depend on received filters.
+func (s *RouteStore) GetListByFilter(ctx context.Context, filter *dataprovider.RouteFilter) ([]*model.Route, error) {
 	qb := sq.
 		Select(
 			"bus_id",
@@ -82,6 +87,7 @@ func (s *RouteStore) ListByFilter(ctx context.Context, filter *dataprovider.Rout
 	return result.([]*model.Route), nil
 }
 
+// Add creates new routes.
 func (s *RouteStore) Add(ctx context.Context, routes ...*model.Route) error {
 	qb := sq.Insert(s.tableName).Columns("bus_id", "stop_id", "step")
 	for _, route := range routes {
@@ -90,11 +96,13 @@ func (s *RouteStore) Add(ctx context.Context, routes ...*model.Route) error {
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
+// Update updates route's stop_id.
 func (s *RouteStore) Update(ctx context.Context, route *model.Route) error {
 	qb := sq.Update(s.tableName).Set("stop_id", route.StopID).Where(sq.Eq{"bus_id": route.BusID, "step": route.Step})
 	return execContext(ctx, qb, s.tableName, s.txer)
 }
 
+// Delete deletes route depend on received filter.
 func (s *RouteStore) Delete(ctx context.Context, filter *dataprovider.RouteFilter) error {
 	qb := sq.Delete(s.tableName).Where(routeCond(filter))
 	return execContext(ctx, qb, s.tableName, s.txer)

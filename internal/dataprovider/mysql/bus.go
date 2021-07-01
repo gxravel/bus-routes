@@ -12,12 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// BusStore is bus mysql store.
 type BusStore struct {
 	db        sqlx.ExtContext
 	txer      dataprovider.Txer
 	tableName string
 }
 
+// NewBusStore creates new instance of BusStore.
 func NewBusStore(db sqlx.ExtContext, txer dataprovider.Txer) *BusStore {
 	return &BusStore{
 		db:        db,
@@ -26,6 +28,7 @@ func NewBusStore(db sqlx.ExtContext, txer dataprovider.Txer) *BusStore {
 	}
 }
 
+// WithTx sets transaction as active connection.
 func (s *BusStore) WithTx(tx *dataprovider.Tx) dataprovider.BusStore {
 	return &BusStore{
 		db:        tx,
@@ -69,8 +72,9 @@ func (s *BusStore) joins(qb sq.SelectBuilder, filter *dataprovider.BusFilter) sq
 	return qb
 }
 
-func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter) (*model.Bus, error) {
-	buses, err := s.ListByFilter(ctx, filter)
+// GetByFilter returns bus depend on received filters.
+func (s *BusStore) GetByFilter(ctx context.Context, filter *dataprovider.BusFilter) (*model.Bus, error) {
+	buses, err := s.GetListByFilter(ctx, filter)
 
 	switch {
 	case err != nil:
@@ -84,7 +88,8 @@ func (s *BusStore) ByFilter(ctx context.Context, filter *dataprovider.BusFilter)
 	}
 }
 
-func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFilter) ([]*model.Bus, error) {
+// GetListByFilter returns buses depend on received filters.
+func (s *BusStore) GetListByFilter(ctx context.Context, filter *dataprovider.BusFilter) ([]*model.Bus, error) {
 	qb := sq.
 		Select(s.columns(filter)...).
 		From(s.tableName).
@@ -103,6 +108,7 @@ func (s *BusStore) ListByFilter(ctx context.Context, filter *dataprovider.BusFil
 	return result.([]*model.Bus), nil
 }
 
+// Add creates new buses skipping those of with wrong city.
 func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 	var ids = make(map[string]int, len(buses))
 	for _, bus := range buses {

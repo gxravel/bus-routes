@@ -19,6 +19,7 @@ type RangeItemsResponse struct {
 	Total int64       `json:"total"`
 }
 
+// Response describes http response for api v1.
 type Response struct {
 	Data  interface{}    `json:"data,omitempty"`
 	Error *ierr.APIError `json:"error,omitempty"`
@@ -62,6 +63,7 @@ func RespondData(ctx context.Context, w http.ResponseWriter, code int, val inter
 	})
 }
 
+// RespondError converts error to Reason, resolves http status code and responds with APIError.
 func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
 	reason := ierr.ConvertToReason(err)
 	code := ierr.ResolveStatusCode(ierr.Cause(reason.Err))
