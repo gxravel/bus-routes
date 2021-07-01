@@ -36,10 +36,6 @@ type Route struct {
 	BusID  int64 `json:"bus_id"`
 	StopID int64 `json:"stop_id"`
 	Step   int8  `json:"step"`
-
-	City    string `json:"city,omitempty"`
-	Address string `json:"address,omitempty"`
-	Number  string `json:"num,omitempty"`
 }
 ```
 

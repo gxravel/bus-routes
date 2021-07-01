@@ -31,10 +31,19 @@ type Route struct {
 	BusID  int64 `json:"bus_id"`
 	StopID int64 `json:"stop_id"`
 	Step   int8  `json:"step"`
+}
 
-	City    string `json:"city,omitempty"`
-	Address string `json:"address,omitempty"`
-	Number  string `json:"num,omitempty"`
+// RoutePoint describes a unit of route for a bus.
+type RoutePoint struct {
+	Step    int8   `json:"step"`
+	Address string `json:"address"`
+}
+
+// RouteDetailed describes http model of detailed route for api v1.
+type RouteDetailed struct {
+	City   string       `json:"city"`
+	Bus    string       `json:"bus"`
+	Points []RoutePoint `json:"points"`
 }
 
 // User describes http model of user for api v1.

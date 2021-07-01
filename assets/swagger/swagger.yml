@@ -117,6 +117,31 @@ definitions:
         description: Порядковый номер остановки по маршруту автобуса
         type: integer
         example: 1
+  RoutePoint:
+    properties:
+      step:
+        description: Порядковый номер остановки по маршруту автобуса
+        type: integer
+        example: 1
+      address:
+        description: Адрес остановки
+        type: string
+        example: ул. Улица, 1
+  RouteDetailed:
+    properties:
+      city:
+        description: Название города
+        type: string
+        example: Москва
+      num:
+        description: Номер автобуса
+        type: string
+        example: "1"
+      points:
+        description: Точки остановок
+        type: array
+        items:
+          $ref: "#/definitions/RoutePoint"
 
 tags:
   - name: internal
@@ -250,7 +275,7 @@ paths:
               $ref: "#/definitions/BusNoID"
             example: [{ city: Москва, num: "11" }, { city: Москва, num: "15" }]
       security:
-      - authorization_header: []
+        - authorization_header: []
       description: |
         Для пользователей с типом:
         `admin`
@@ -573,5 +598,38 @@ paths:
           description: No Content
         "400":
           description: Bad request
+        "500":
+          description: Internal server error
+
+  /api/v1/routes/detailed:
+    get:
+      summary: Получение списка маршрутов автобуса
+      tags:
+        - routes
+      parameters:
+        - name: bus_ids
+          description: Идентификаторы автобусов
+          in: query
+          type: array
+          items:
+            type: integer
+          required: true
+      security:
+        - authorization_header: []
+      description: |
+        Для пользователей с типом:
+        `admin`
+        `service`
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RouteDetailed"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal server error

@@ -265,6 +265,15 @@ func ParseRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
 		ByBusIDs(busIDs...).ByStopIDs(stopIDs...).BySteps(steps...), nil
 
 }
+func ParseRouteDetailedFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
+	busIDs, err := ParseQueryInt64Slice(r, "bus_ids")
+	if err != nil {
+		return nil, err
+	}
+
+	return dataprovider.NewRouteFilter().
+		ByBusIDs(busIDs...).ViewDetailed(), nil
+}
 
 func ParseDeleteRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
 	busID, err := parseQueryInt64(r, "bus_id")
