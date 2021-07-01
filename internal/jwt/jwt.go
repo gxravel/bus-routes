@@ -43,10 +43,10 @@ type Details struct {
 // JWT contains the fields which interact with the token.
 type JWT struct {
 	client *storage.Client
-	config config.JWT
+	config config.Config
 }
 
-func New(client *storage.Client, config config.JWT) *JWT {
+func New(client *storage.Client, config config.Config) *JWT {
 	return &JWT{client: client, config: config}
 }
 
@@ -76,7 +76,7 @@ func create(ctx context.Context, user *v1.User, expiry time.Duration, key string
 
 // Parse parses a string token with the key.
 func (m *JWT) Parse(tokenString string) (*Claims, error) {
-	var key = []byte(m.config.AccessKey)
+	var key = []byte(m.config.JWT.AccessKey)
 
 	jwtToken, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -114,7 +114,7 @@ func (m *JWT) Delete(ctx context.Context, tokenUUID string) error {
 // SetNew returns the access token.
 func (m *JWT) SetNew(ctx context.Context, user *v1.User) (*v1.Token, error) {
 	logger := logger.FromContext(ctx)
-	accessToken, err := create(ctx, user, m.config.AccessExpiry, m.config.AccessKey)
+	accessToken, err := create(ctx, user, m.config.JWT.AccessExpiry, m.config.JWT.AccessKey)
 	if err != nil {
 		return nil, err
 	}

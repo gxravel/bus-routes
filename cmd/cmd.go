@@ -59,7 +59,7 @@ func main() {
 		log.WithErr(err).Fatal("can't migrate the db")
 	}
 
-	storage, err := storage.NewClient(cfg.Storage)
+	storage, err := storage.NewClient(*cfg)
 	if err != nil {
 		log.WithErr(err).Fatal("connecting to storage client")
 	}
@@ -71,7 +71,7 @@ func main() {
 	routeStore := mysql.NewRouteStore(db, txer)
 	userStore := mysql.NewUserStore(db, txer)
 
-	jwtManager := jwt.New(storage, cfg.JWT)
+	jwtManager := jwt.New(storage, *cfg)
 
 	busroutes := busroutes.New(
 		cfg,
