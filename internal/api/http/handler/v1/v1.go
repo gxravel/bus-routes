@@ -5,9 +5,10 @@ import "github.com/gxravel/bus-routes/internal/model"
 // Bus describes http model of bus for api v1.
 type Bus struct {
 	ID     int64  `json:"id,omitempty"`
-	City   string `json:"city,omitempty"`
 	CityID int    `json:"city_id,omitempty"`
 	Num    string `json:"num"`
+
+	City string `json:"city,omitempty"`
 }
 
 // City describes http model of city for api v1.
@@ -19,9 +20,10 @@ type City struct {
 // Stop describes http model of bus stop for api v1.
 type Stop struct {
 	ID      int64  `json:"id,omitempty"`
-	City    string `json:"city,omitempty"`
 	CityID  int    `json:"city_id,omitempty"`
 	Address string `json:"address"`
+
+	City string `json:"city,omitempty"`
 }
 
 // Route describes http model of route for api v1.
@@ -29,6 +31,10 @@ type Route struct {
 	BusID  int64 `json:"bus_id"`
 	StopID int64 `json:"stop_id"`
 	Step   int8  `json:"step"`
+
+	City    string `json:"city"`
+	Address string `json:"address"`
+	Number  string `json:"num"`
 }
 
 // User describes http model of user for api v1.

@@ -19,11 +19,12 @@ func (t UserType) String() string { return string(t) }
 const (
 	UserAdmin       UserType = "admin"
 	UserGuest       UserType = "guest"
+	UserService     UserType = "service"
 	DefaultUserType UserType = UserGuest
 )
 
 var (
-	V1BusroutesUserTypes = []UserType{UserAdmin, UserGuest}
+	V1BusroutesUserTypes = []UserType{UserAdmin, UserGuest, UserService}
 )
 
 type UserTypes []UserType

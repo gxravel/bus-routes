@@ -124,10 +124,10 @@ func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 		for _, bus := range buses {
 			id := ids[bus.City]
 			if id == 0 {
-				logger.FromContext(ctx).Debugf("bus [%s, %s] skipped", bus.City, bus.Num)
+				logger.FromContext(ctx).Debugf("bus [%s, %s] skipped", bus.City, bus.Number)
 				continue
 			}
-			qb = qb.Values(id, bus.Num)
+			qb = qb.Values(id, bus.Number)
 		}
 
 		query, args, _, err := toSql(ctx, qb, s.tableName)

@@ -16,9 +16,10 @@ type RouteStore interface {
 }
 
 type RouteFilter struct {
-	BusIDs  []int64
-	StopIDs []int64
-	Steps   []int8
+	BusIDs       []int64
+	StopIDs      []int64
+	Steps        []int8
+	DetailedView bool
 }
 
 func NewRouteFilter() *RouteFilter {
@@ -37,5 +38,10 @@ func (f *RouteFilter) ByStopIDs(ids ...int64) *RouteFilter {
 
 func (f *RouteFilter) BySteps(steps ...int8) *RouteFilter {
 	f.Steps = steps
+	return f
+}
+
+func (f *RouteFilter) ViewDetailed() *RouteFilter {
+	f.DetailedView = true
 	return f
 }
