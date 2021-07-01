@@ -11,6 +11,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
+// RegisterUserTypes adds to request's context allowed user types.
 func RegisterUserTypes(types ...model.UserType) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +23,7 @@ func RegisterUserTypes(types ...model.UserType) func(http.Handler) http.Handler 
 	}
 }
 
+// Auth searches user by token and adds his data to context.
 func Auth(busroutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +48,7 @@ func Auth(busroutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
 }
 
 const (
+	// AuthHeader is a header used to find token of user.
 	AuthHeader = "Authorization"
 )
 

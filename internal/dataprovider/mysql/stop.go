@@ -12,12 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// StopStore is stop mysql store.
 type StopStore struct {
 	db        sqlx.ExtContext
 	txer      dataprovider.Txer
 	tableName string
 }
 
+// NewStopStore creates new instance of StopStore.
 func NewStopStore(db sqlx.ExtContext, txer dataprovider.Txer) *StopStore {
 	return &StopStore{
 		db:        db,
@@ -26,6 +28,7 @@ func NewStopStore(db sqlx.ExtContext, txer dataprovider.Txer) *StopStore {
 	}
 }
 
+// WithTx sets transaction as active connection.
 func (s *StopStore) WithTx(tx *dataprovider.Tx) dataprovider.StopStore {
 	return &StopStore{
 		db:        tx,
@@ -69,6 +72,7 @@ func (s *StopStore) joins(qb sq.SelectBuilder, filter *dataprovider.StopFilter) 
 	return qb
 }
 
+// ByFilter returns stop depend on received filters.
 func (s *StopStore) ByFilter(ctx context.Context, filter *dataprovider.StopFilter) (*model.Stop, error) {
 	stops, err := s.ListByFilter(ctx, filter)
 
@@ -84,6 +88,7 @@ func (s *StopStore) ByFilter(ctx context.Context, filter *dataprovider.StopFilte
 	}
 }
 
+// ListByFilter returns stops depend on received filters.
 func (s *StopStore) ListByFilter(ctx context.Context, filter *dataprovider.StopFilter) ([]*model.Stop, error) {
 	qb := sq.
 		Select(s.columns(filter)...).
@@ -99,6 +104,7 @@ func (s *StopStore) ListByFilter(ctx context.Context, filter *dataprovider.StopF
 	return result.([]*model.Stop), nil
 }
 
+// Add creates new stops skipping those of with wrong city.
 func (s *StopStore) Add(ctx context.Context, stops ...*model.Stop) error {
 	var ids = make(map[string]int, len(stops))
 	for _, stop := range stops {
@@ -134,6 +140,7 @@ func (s *StopStore) Add(ctx context.Context, stops ...*model.Stop) error {
 	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
 }
 
+// Update updates stop's city_id and address.
 func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 	f := func(tx *dataprovider.Tx) error {
 		id, err := CityID(ctx, stop.City, s.db, s.txer, tx)
@@ -145,7 +152,7 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 			logger.FromContext(ctx).Debug(err.Error())
 			return err
 		}
-		qb := sq.Update(s.tableName).Set("city_id", id).Set("Address", stop.Address).Where(sq.Eq{"id": stop.ID})
+		qb := sq.Update(s.tableName).Set("city_id", id).Set("address", stop.Address).Where(sq.Eq{"id": stop.ID})
 		query, args, _, err := toSql(ctx, qb, s.tableName)
 		if err != nil {
 			return err
@@ -168,6 +175,7 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 	return dataprovider.BeginAutoCommitedTx(ctx, s.txer, f)
 }
 
+// Delete deletes stop depend on received filter.
 func (s *StopStore) Delete(ctx context.Context, filter *dataprovider.StopFilter) error {
 	qb := sq.Delete(s.tableName).Where(stopCond(filter))
 	return execContext(ctx, qb, s.tableName, s.txer)

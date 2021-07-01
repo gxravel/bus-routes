@@ -17,6 +17,7 @@ var (
 	regEmail = regexp.MustCompile(`^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$`)
 )
 
+// validateUserCredentials validates user password and email, and transfrom the email to lowercase.
 func validateUserCredentials(user *v1.User) (err error) {
 	if !regPass.MatchString(user.Password) {
 		err = ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid password: min length - 4")

@@ -13,6 +13,7 @@ const (
 	ReasonValidationError ReasonType = "validation_error"
 )
 
+// Reason describes error reason.
 type Reason struct {
 	RType   ReasonType `json:"type"`
 	Err     TypedError `json:"error"`
@@ -93,6 +94,7 @@ func newTypedError(reasonType ReasonType, err error) TypedError {
 	}
 }
 
+// CheckDuplicate checks if the database error contains "Duplicate" and return updated error.
 func CheckDuplicate(err error, field string) error {
 	if strings.Contains(err.Error(), "Duplicate") {
 		return NewReason(ErrConflict).WithMessage("the " + field + " is already in use")
@@ -104,6 +106,7 @@ type causer interface {
 	Cause() error
 }
 
+// Cause returns true cause error of err.
 func Cause(err error) error {
 	for err != nil {
 		cause, okCause := err.(causer)

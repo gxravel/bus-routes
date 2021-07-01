@@ -2,6 +2,7 @@ package errors
 
 import "net/http"
 
+// APIError describes http model of error.
 type APIError struct {
 	Reason *Reason `json:"reason"`
 }

@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// User describes user in bus_routes.user.
 type User struct {
 	ID             int64     `db:"id"`
 	Email          string    `db:"email"`
@@ -27,6 +28,7 @@ var (
 
 type UserTypes []UserType
 
+// Exists returns true if types exist in t.
 func (t UserTypes) Exists(types ...UserType) bool {
 	uniqueTypes := make(map[UserType]struct{}, len(t))
 	for _, ut := range t {
