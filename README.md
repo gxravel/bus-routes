@@ -7,9 +7,10 @@
 ```
 type Bus struct {
 	ID     int64  `json:"id,omitempty"`
-	City   string `json:"city,omitempty"`
 	CityID int    `json:"city_id,omitempty"`
 	Num    string `json:"num"`
+
+	City string `json:"city,omitempty"`
 }
 ```
 
@@ -23,9 +24,10 @@ type City struct {
 ```
 type Stop struct {
 	ID      int64  `json:"id,omitempty"`
-	City    string `json:"city,omitempty"`
 	CityID  int    `json:"city_id,omitempty"`
 	Address string `json:"address"`
+
+	City string `json:"city,omitempty"`
 }
 ```
 
@@ -34,6 +36,10 @@ type Route struct {
 	BusID  int64 `json:"bus_id"`
 	StopID int64 `json:"stop_id"`
 	Step   int8  `json:"step"`
+
+	City    string `json:"city"`
+	Address string `json:"address"`
+	Number  string `json:"num"`
 }
 ```
 

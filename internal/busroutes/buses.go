@@ -24,8 +24,8 @@ func toDBBuses(buses ...*v1.Bus) []*model.Bus {
 	var dbBuses = make([]*model.Bus, 0, len(buses))
 	for _, bus := range buses {
 		dbBuses = append(dbBuses, &model.Bus{
-			City: bus.City,
-			Num:  bus.Num,
+			City:   bus.City,
+			Number: bus.Num,
 		})
 	}
 	return dbBuses
@@ -37,7 +37,7 @@ func toV1Buses(dbBuses ...*model.Bus) []*v1.Bus {
 		buses = append(buses, &v1.Bus{
 			ID:   bus.ID,
 			City: bus.City,
-			Num:  bus.Num,
+			Num:  bus.Number,
 		})
 	}
 	return buses
