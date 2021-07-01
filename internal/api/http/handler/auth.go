@@ -88,6 +88,13 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	filter = dataprovider.NewUserFilter().SelectType().ByEmails(user.Email)
+	user.Type, err = s.busroutes.GetUserType(ctx, filter)
+	if err != nil {
+		api.RespondError(ctx, w, http.StatusInternalServerError, err)
+		return
+	}
+
 	token, err := s.busroutes.NewJWT(ctx, user)
 	if err != nil {
 		api.RespondError(ctx, w, err)

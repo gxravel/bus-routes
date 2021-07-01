@@ -2,11 +2,12 @@ package busroutes
 
 import (
 	"context"
+	"errors"
 
 	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 	"github.com/gxravel/bus-routes/internal/logger"
-	"github.com/gxravel/bus-routes/internal/model"
+	"github.com/gxravel/bus-routes/internal/model"")
 )
 
 func (r *BusRoutes) NewJWT(ctx context.Context, user *v1.User) (*v1.Token, error) {
