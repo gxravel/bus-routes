@@ -2,30 +2,33 @@
 
 ## Описание
 
-На данном этапе проект представляет собой простой CRUD для таких сущностей, как 
+На данном этапе проект представляет собой простой CRUD для таких сущностей, как
 
 ```
 type Bus struct {
 	ID     int64  `json:"id,omitempty"`
 	City   string `json:"city,omitempty"`
-	CityID string `json:"city_id,omitempty"`
+	CityID int    `json:"city_id,omitempty"`
 	Num    string `json:"num"`
 }
 ```
+
 ```
 type City struct {
 	ID   int    `json:"id,omitempty"`
 	Name string `json:"name"`
 }
 ```
+
 ```
 type Stop struct {
 	ID      int64  `json:"id,omitempty"`
 	City    string `json:"city,omitempty"`
-	CityID  string `json:"city_id,omitempty"`
+	CityID  int    `json:"city_id,omitempty"`
 	Address string `json:"address"`
 }
 ```
+
 ```
 type Route struct {
 	BusID  int64 `json:"bus_id"`
@@ -36,8 +39,8 @@ type Route struct {
 
 ## Зависимости
 
-* Go 1.16
-* MySQL 8+
+- Go 1.16
+- MySQL 8+
 
 Подготовка окружения - установка необходимых программ, генерирование кода и конфигурации:
 
@@ -65,16 +68,19 @@ $ make run
 ## Проверки (запуск линтеров)
 
 Проверка спецификации swagger:
+
 ```shell script
 make check.swagger
 ```
 
 Проверка кода линтерами:
+
 ```shell script
 make lint
 ```
 
 Проверка всего:
+
 ```shell script
 make check
 ```

@@ -6,7 +6,7 @@ import "github.com/gxravel/bus-routes/internal/model"
 type Bus struct {
 	ID     int64  `json:"id,omitempty"`
 	City   string `json:"city,omitempty"`
-	CityID string `json:"city_id,omitempty"`
+	CityID int    `json:"city_id,omitempty"`
 	Num    string `json:"num"`
 }
 
@@ -20,7 +20,7 @@ type City struct {
 type Stop struct {
 	ID      int64  `json:"id,omitempty"`
 	City    string `json:"city,omitempty"`
-	CityID  string `json:"city_id,omitempty"`
+	CityID  int    `json:"city_id,omitempty"`
 	Address string `json:"address"`
 }
 
