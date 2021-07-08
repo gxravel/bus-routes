@@ -1,4 +1,4 @@
-module github.com/gxravel/bus-routes-rabbitmq
+module github.com/gxravel/bus-routes/pkg/rmq
 
 go 1.16
 
