@@ -10,7 +10,7 @@ type UserStore interface {
 	WithTx(*Tx) UserStore
 	GetByFilter(ctx context.Context, filter *UserFilter) (*model.User, error)
 	GetListByFilter(ctx context.Context, filter *UserFilter) ([]*model.User, error)
-	Add(ctx context.Context, users ...*model.User) error
+	Add(ctx context.Context, users ...*model.User) (int64, error)
 	Delete(ctx context.Context, filter *UserFilter) error
 	Update(ctx context.Context, user *model.User) error
 	UpdatePassword(ctx context.Context, hashedPassword []byte, filter *UserFilter) error

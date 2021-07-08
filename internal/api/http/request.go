@@ -62,7 +62,7 @@ func ParseQueryParam(r *http.Request, field string) (string, error) {
 	return param, nil
 }
 
-// ParseQueryParams parses query params for specific field.
+// ParseQueryParams parses query params for specific fields.
 func ParseQueryParams(r *http.Request, field string) ([]string, error) {
 	q := r.URL.Query()
 	params := q[field]

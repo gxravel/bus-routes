@@ -7,5 +7,5 @@ type Bus struct {
 	Number string `db:"num"`
 
 	// implicitly
-	City string `db:"city"`
+	City string `db:"name"`
 }

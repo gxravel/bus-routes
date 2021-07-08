@@ -28,9 +28,9 @@ type Manager interface {
 
 // User describes user built into the token
 type User struct {
-	ID    int64
-	Email string
-	Type  model.UserType
+	ID    int64          `json:"id"`
+	Email string         `json:"email"`
+	Type  model.UserType `json:"type"`
 }
 
 // Claims defines JWT token claims.
@@ -44,7 +44,7 @@ type Details struct {
 	String  string
 	Expiry  int64
 	UUID    string
-	Subject string
+	Subject int64
 }
 
 // JWT contains the fields which interact with the token.
@@ -71,6 +71,7 @@ func create(ctx context.Context, user *User, expiry time.Duration, key string) (
 		},
 	}
 	token.UUID = claims.Id
+	token.Subject = claims.User.ID
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	var err error

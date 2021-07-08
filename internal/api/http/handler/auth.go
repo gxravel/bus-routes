@@ -43,11 +43,13 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.busroutes.AddUsers(ctx, user); err != nil {
+	id, err := s.busroutes.AddUsers(ctx, user)
+	if err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
 
+	user.ID = id
 	user.Type = model.DefaultUserType
 
 	token, err := s.busroutes.NewJWT(ctx, user)
@@ -73,21 +75,29 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter := dataprovider.NewUserFilter().SelectPassword().ByEmails(user.Email)
-	err := s.busroutes.CheckPasswordHash(ctx, user.Password, filter)
-	if err != nil {
+	filter := dataprovider.
+		NewUserFilter().
+		SelectPassword().
+		ByEmails(user.Email)
+
+	if err := s.busroutes.CheckPasswordHash(ctx, user.Password, filter); err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
 
-	filter = dataprovider.NewUserFilter().SelectType().ByEmails(user.Email)
-	user.Type, err = s.busroutes.GetUserType(ctx, filter)
+	filter = dataprovider.NewUserFilter().ByEmails(user.Email)
+
+	users, err := s.busroutes.GetUsers(ctx, filter)
 	if err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
+	if len(users) == 0 {
+		api.RespondError(ctx, w, ierr.ErrUnauthorized)
+		return
+	}
 
-	token, err := s.busroutes.NewJWT(ctx, user)
+	token, err := s.busroutes.NewJWT(ctx, users[0])
 	if err != nil {
 		api.RespondError(ctx, w, err)
 		return
