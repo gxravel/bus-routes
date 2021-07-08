@@ -44,7 +44,7 @@ func busCond(f *dataprovider.BusFilter) sq.Sqlizer {
 		eq["bus.id"] = f.IDs
 	}
 	if len(f.Cities) > 0 {
-		eq["city"] = f.Cities
+		eq["name"] = f.Cities
 	}
 	if len(f.Nums) > 0 {
 		eq["num"] = f.Nums
@@ -56,7 +56,7 @@ func busCond(f *dataprovider.BusFilter) sq.Sqlizer {
 func (s *BusStore) columns(filter *dataprovider.BusFilter) []string {
 	var result = []string{
 		"bus.id",
-		"city.name as city",
+		"city.name as name",
 		"num",
 	}
 	if filter.DoPreferIDs {
@@ -136,7 +136,7 @@ func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 		}
 
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "inserting buses with query %s", query)
+			return errors.Wrapf(err, "insert buses with query %s", query)
 		}
 		return nil
 	}

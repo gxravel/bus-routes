@@ -105,12 +105,28 @@ func (s *UserStore) GetListByFilter(ctx context.Context, filter *dataprovider.Us
 }
 
 // Add creates new users.
-func (s *UserStore) Add(ctx context.Context, users ...*model.User) error {
+func (s *UserStore) Add(ctx context.Context, users ...*model.User) (int64, error) {
 	qb := sq.Insert(s.tableName).Columns(s.columns(nil)...)
 	for _, user := range users {
 		qb = qb.Values(user.Email, user.HashedPassword)
 	}
-	return execContext(ctx, qb, s.tableName, s.txer)
+
+	query, args, codewords, err := toSql(ctx, qb, s.tableName)
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := s.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, errors.Wrapf(err, codewords+" with query %s", query)
+	}
+
+	lastID, err := result.LastInsertId()
+	if err != nil {
+		return 0, errors.Wrapf(err, "failed to get last insert id while "+codewords)
+	}
+
+	return lastID, nil
 }
 
 // Update updates user's email and type.

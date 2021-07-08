@@ -57,13 +57,13 @@ func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFi
 	return dbUser.Type, nil
 }
 
-func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) error {
-	err := r.userStore.Add(ctx, toDBUsers(ctx, users...)...)
+func (r *BusRoutes) AddUsers(ctx context.Context, users ...*v1.User) (int64, error) {
+	id, err := r.userStore.Add(ctx, toDBUsers(ctx, users...)...)
 	if err != nil {
 		err = ierr.CheckDuplicate(err, "email")
-		return err
+		return 0, err
 	}
-	return nil
+	return id, nil
 }
 
 func (r *BusRoutes) UpdateUser(ctx context.Context, user *v1.User) error {
