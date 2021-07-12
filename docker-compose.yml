@@ -20,7 +20,18 @@ services:
       - redis_data:/var/lib/redis
     ports:
       - 6378:6379
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rmq_data:/var/lib/rabbitmq
+      - rmq_log:/var/log/rabbitmq
     
 volumes:
   db_data: {}
   redis_data: {}
+  rmq_data: {}
+  rmq_log: {}
