@@ -24,3 +24,6 @@ jwt:
 
 storage:
     redis_dsn: {{ config.storage.redis_dsn }} # default: localhost: 6378
+    
+rabbitmq:
+    url: {{ config.rabbitmq.url }} # default amqp://guest:guest@localhost:5672/

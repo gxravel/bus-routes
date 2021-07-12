@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	amqp "github.com/gxravel/bus-routes/internal/api/amqp/handler"
 	"github.com/gxravel/bus-routes/internal/api/http/handler"
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
@@ -79,6 +80,20 @@ func main() {
 		txer,
 		jwt.New(storage, *cfg),
 	)
+
+	amqpServer, err := amqp.NewServer(
+		*cfg,
+		busroutes,
+		logger,
+	)
+	if err != nil {
+		logger.WithErr(err).Fatal("failed to create RabbitMQ client")
+	}
+	defer func() {
+		if err := amqpServer.CloseConnection(); err != nil {
+			logger.WithErr(err).Error("failed to close RabbitMQ connection")
+		}
+	}()
 
 	apiServer := handler.NewServer(
 		cfg,
