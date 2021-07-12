@@ -11,15 +11,18 @@ import (
 )
 
 // getDetailedRoutes returns the routes detailed view: city, address, number.
-func (s *Server) getDetailedRoutes(ctx context.Context, meta *rmq.Meta, message *amqp.Delivery) (interface{}, error) {
+func (s *Server) getDetailedRoutes(ctx context.Context, message *amqp.Delivery) (interface{}, error) {
 	s.logger.WithField("delivery", message).Debug("got message")
 
 	bus := &v1.Bus{}
-	if err := s.broker.TranslateMessage(message.Body, bus); err != nil {
+	if err := rmq.TranslateMessage(message.Body, bus); err != nil {
 		return nil, err
 	}
 
-	buses, err := s.busroutes.GetBuses(ctx, dataprovider.NewBusFilter().ByCities(bus.City).ByNums(bus.Num))
+	buses, err := s.busroutes.GetBuses(ctx, dataprovider.NewBusFilter().
+		ByCities(bus.City).
+		ByNums(bus.Num),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -27,12 +30,16 @@ func (s *Server) getDetailedRoutes(ctx context.Context, meta *rmq.Meta, message 
 		return nil, nil
 	}
 
-	routesDetailed, err := s.busroutes.GetDetailedRoutes(ctx, dataprovider.NewRouteFilter().ByBusIDs(buses[0].ID).ViewDetailed())
+	routesDetailed, err := s.busroutes.GetDetailedRoutes(ctx, dataprovider.NewRouteFilter().
+		ByBusIDs(buses[0].ID).
+		ViewDetailed(),
+	)
 	if err != nil {
 		return nil, err
 	}
-
-	s.logger.WithField("routes", routesDetailed).Debug("sent response")
+	if len(routesDetailed) == 0 {
+		return nil, nil
+	}
 
 	return v1.RangeItemsResponse{
 		Items: routesDetailed,

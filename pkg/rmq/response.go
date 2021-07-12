@@ -5,27 +5,29 @@ import (
 	"encoding/json"
 
 	amqpv1 "github.com/gxravel/bus-routes/pkg/rmq/v1"
+
+	"github.com/pkg/errors"
 )
 
 // produceJSON produces a message in format of JSON.
-func (c *Client) produceJSON(ctx context.Context, meta *Meta, data interface{}) {
-	c.logger.Debugf("sending data: %v", data)
-	body, err := c.ConvertToMessage(data)
+func (p *Publisher) produceJSON(ctx context.Context, meta *Meta, data interface{}) {
+	p.logger.Debugf("sending data: %v", data)
+	body, err := ConvertToMessage(data)
 	if err != nil {
 		return
 	}
 
-	if err := c.produce(meta, body); err != nil {
-		c.logger.Error("failed to publish message")
+	if err := p.produce(meta, body); err != nil {
+		p.logger.Error("failed to publish message")
 	}
 }
 
 // ProduceError resolves status code and produces an APIError.
-func (c *Client) ProduceError(ctx context.Context, meta *Meta, err error) {
+func (p *Publisher) ProduceError(ctx context.Context, meta *Meta, err error) {
 	reason := ConvertToReason(err)
 	code := ResolveStatusCode(reason.Err)
 
-	c.produceJSON(ctx, meta, &amqpv1.Response{
+	p.produceJSON(ctx, meta, &amqpv1.Response{
 		Error: &amqpv1.APIError{
 			Code: code,
 			Reason: &amqpv1.APIReason{
@@ -37,28 +39,26 @@ func (c *Client) ProduceError(ctx context.Context, meta *Meta, err error) {
 }
 
 // ProduceData produces a message with the amqpv1.Response.
-func (c *Client) ProduceData(ctx context.Context, meta *Meta, data interface{}) {
-	c.produceJSON(ctx, meta, &amqpv1.Response{
+func (p *Publisher) ProduceData(ctx context.Context, meta *Meta, data interface{}) {
+	p.produceJSON(ctx, meta, &amqpv1.Response{
 		Data: data,
 	})
 }
 
 // TranslateMessage translate a message body to JSON.
-func (c *Client) TranslateMessage(message []byte, data interface{}) error {
+func TranslateMessage(message []byte, data interface{}) error {
 	if err := json.Unmarshal(message, data); err != nil {
-		c.logger.Error("failed to translate message")
-		return err
+		return errors.Wrap(err, "failed to translate message")
 	}
 
 	return nil
 }
 
 // ConvertToMessage converts a JSON-encoded data to message body.
-func (c *Client) ConvertToMessage(data interface{}) ([]byte, error) {
+func ConvertToMessage(data interface{}) ([]byte, error) {
 	message, err := json.Marshal(data)
 	if err != nil {
-		c.logger.Error("failed to convert to message")
-		return nil, err
+		return nil, errors.Wrap(err, "failed to convert to message")
 	}
 
 	return message, nil

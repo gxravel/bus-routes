@@ -16,6 +16,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/jwt"
 	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/storage"
+	"github.com/gxravel/bus-routes/pkg/rmq"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -81,19 +82,38 @@ func main() {
 		jwt.New(storage, *cfg),
 	)
 
+	publisher, err := rmq.NewPublisher(cfg.RabbitMQ.URL, logger)
+	if err != nil {
+		logger.WithErr(err).Fatal("failed to create a publisher RabbitMQ client")
+	}
+
+	defer func() {
+		if err := publisher.Close(); err != nil {
+			logger.WithErr(err).Error("failed to close publisher RabbitMQ connection")
+		}
+	}()
+
+	consumer, err := rmq.NewConsumer(cfg.RabbitMQ.URL, logger)
+	if err != nil {
+		logger.WithErr(err).Fatal("failed to create a consumer RabbitMQ client")
+	}
+
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			logger.WithErr(err).Error("failed to close consumer RabbitMQ connection")
+		}
+	}()
+
 	amqpServer, err := amqp.NewServer(
 		*cfg,
+		publisher,
+		consumer,
 		busroutes,
 		logger,
 	)
 	if err != nil {
-		logger.WithErr(err).Fatal("failed to create RabbitMQ client")
+		logger.WithErr(err).Fatal("failed to create amqp Server")
 	}
-	defer func() {
-		if err := amqpServer.CloseConnection(); err != nil {
-			logger.WithErr(err).Error("failed to close RabbitMQ connection")
-		}
-	}()
 
 	apiServer := handler.NewServer(
 		cfg,

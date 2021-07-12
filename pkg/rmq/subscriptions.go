@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-func (c *Client) SubscribeForDetailedRoutes(handler handlerFunc) (func(context.Context), error) {
-	f, err := c.subscribe(MetaDetailedRoutesAccept, MetaDetailedRoutesTransmit, handler)
+func (c *Consumer) SubscribeForDetailedRoutes(handler handlerFunc, publisher *Publisher) (func(context.Context), error) {
+	f, err := c.subscribe(GetMetaDetailedRoutesAccept(), GetMetaDetailedRoutesTransmit(), handler, publisher)
 	if err != nil {
 		return nil, err
 	}
@@ -15,8 +15,8 @@ func (c *Client) SubscribeForDetailedRoutes(handler handlerFunc) (func(context.C
 	return f, nil
 }
 
-func (c *Client) ListenRPCForDetailedRoutes(handler handlerFunc) (func(context.Context), error) {
-	f, err := c.listenRPC(MetaDetailedRoutesRPC, handler)
+func (c *Consumer) ListenRPCForDetailedRoutes(handler handlerFunc, publisher *Publisher) (func(context.Context), error) {
+	f, err := c.listenRPC(GetMetaDetailedRoutesRPC(), handler, publisher)
 	if err != nil {
 		return nil, err
 	}
@@ -26,10 +26,11 @@ func (c *Client) ListenRPCForDetailedRoutes(handler handlerFunc) (func(context.C
 	return f, nil
 }
 
-func (c *Client) subscribe(
+func (c *Consumer) subscribe(
 	metaAccept *Meta,
 	metaTransmit *Meta,
 	handler handlerFunc,
+	publisher *Publisher,
 ) (func(context.Context), error) {
 	c.logger.Infof("meta to accept: %v", metaAccept)
 	c.logger.Infof("meta to transmit: %v", metaTransmit)
@@ -39,10 +40,14 @@ func (c *Client) subscribe(
 		return nil, err
 	}
 
-	return c.wrapHandler(metaTransmit, delivery, handler), nil
+	return publisher.wrapHandler(metaTransmit, delivery, handler), nil
 }
 
-func (c *Client) listenRPC(meta *Meta, handler handlerFunc) (func(context.Context), error) {
+func (c *Consumer) listenRPC(
+	meta *Meta,
+	handler handlerFunc,
+	publisher *Publisher,
+) (func(context.Context), error) {
 	c.logger.Infof("meta: %v", meta)
 
 	delivery, err := c.WorkOnTask(meta.QName, 1)
@@ -50,5 +55,5 @@ func (c *Client) listenRPC(meta *Meta, handler handlerFunc) (func(context.Contex
 		return nil, err
 	}
 
-	return c.wrapHandler(meta, delivery, handler), nil
+	return publisher.wrapHandler(meta, delivery, handler), nil
 }

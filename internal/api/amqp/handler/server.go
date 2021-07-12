@@ -10,7 +10,6 @@ import (
 )
 
 type Server struct {
-	broker    *rmq.Client
 	logger    log.Logger
 	busroutes *busroutes.Busroutes
 	handlers  []func(context.Context)
@@ -20,25 +19,21 @@ type Server struct {
 // linking handlers with the required meta and amqp.Delivery.
 func NewServer(
 	cfg config.Config,
+	publisher *rmq.Publisher,
+	consumer *rmq.Consumer,
 	busroutes *busroutes.Busroutes,
 	logger log.Logger,
 ) (*Server, error) {
 
-	broker, err := rmq.NewClient(cfg.RabbitMQ.URL, logger)
-	if err != nil {
-		logger.WithErr(err).Fatal("failed to create RabbitMQ client")
-		return nil, err
-	}
-
 	srv := &Server{
-		broker:    broker,
 		logger:    logger.WithModule("api:amqp"),
 		busroutes: busroutes,
 	}
 
 	srv.handlers = make([]func(context.Context), 1)
 
-	srv.handlers[0], err = broker.ListenRPCForDetailedRoutes(srv.getDetailedRoutes)
+	var err error
+	srv.handlers[0], err = consumer.ListenRPCForDetailedRoutes(srv.getDetailedRoutes, publisher)
 	if err != nil {
 		return nil, err
 	}
@@ -53,9 +48,4 @@ func (s *Server) ListenAndServe() {
 	for _, handler := range s.handlers {
 		go handler(ctx)
 	}
-}
-
-// CloseConnection closes connection of amqp client.
-func (s *Server) CloseConnection() error {
-	return s.broker.Close()
 }

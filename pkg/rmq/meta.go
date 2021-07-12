@@ -10,22 +10,26 @@ type Meta struct {
 	Mode   uint8
 }
 
-var (
-	MetaDetailedRoutesAccept = &Meta{
+func GetMetaDetailedRoutesAccept() *Meta {
+	return &Meta{
 		XName: "x_detailed-routes_accept",
 		XType: "direct",
 		QName: "",
 		Key:   "key_detailed-routes_accept",
 	}
+}
 
-	MetaDetailedRoutesTransmit = &Meta{
+func GetMetaDetailedRoutesTransmit() *Meta {
+	return &Meta{
 		XName: "x_detailed-routes_transmit",
 		XType: "direct",
 		QName: "",
 		Key:   "key_detailed-routes_transmit",
 	}
+}
 
-	MetaDetailedRoutesRPC = &Meta{
-		QName: "q_detailed-routes_rpc",
+func GetMetaDetailedRoutesRPC() *Meta {
+	return &Meta{
+		Key: "key_detailed-routes_rpc",
 	}
-)
+}

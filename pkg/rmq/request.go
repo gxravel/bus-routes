@@ -36,10 +36,10 @@ func init() {
 }
 
 // handlerFunc is function signature for an amqp handler.
-type handlerFunc func(context.Context, *Meta, *amqp.Delivery) (interface{}, error)
+type handlerFunc func(context.Context, *amqp.Delivery) (interface{}, error)
 
 // wrapHandler wraps handler with meta, message and processing message function.
-func (c *Client) wrapHandler(
+func (p *Publisher) wrapHandler(
 	meta *Meta,
 	delivery <-chan amqp.Delivery,
 	handler handlerFunc,
@@ -48,7 +48,7 @@ func (c *Client) wrapHandler(
 		for {
 			select {
 			case message := <-delivery:
-				go c.processMessage(ctx, meta, &message, handler)
+				go p.processMessage(ctx, meta, &message, handler)
 
 			case <-ctx.Done():
 				return
@@ -65,8 +65,8 @@ type handlerResult struct {
 
 // processMessage processes incoming message, adding recoverer and timeout,
 // and listening for result to produce data or error.
-func (c *Client) processMessage(ctx context.Context, meta *Meta, message *amqp.Delivery, handler handlerFunc) {
-	defer c.recover(meta)
+func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amqp.Delivery, handler handlerFunc) {
+	defer p.recover(meta)
 
 	meta.CorrID = message.CorrelationId
 	if message.ReplyTo != "" {
@@ -79,31 +79,31 @@ func (c *Client) processMessage(ctx context.Context, meta *Meta, message *amqp.D
 	ch := make(chan *handlerResult)
 
 	go func() {
-		data, err := handler(ctx, meta, message)
+		data, err := handler(ctx, message)
 		ch <- &handlerResult{Data: data, Err: err}
 	}()
 
 	select {
 	case <-ctx.Done():
-		c.ProduceError(ctx, meta, errors.New("request canceled"))
+		p.ProduceError(ctx, meta, errors.New("request canceled"))
 		return
 
 	case result := <-ch:
 		if result.Err != nil {
-			c.ProduceError(ctx, meta, result.Err)
+			p.ProduceError(ctx, meta, result.Err)
 			return
 		}
-		c.ProduceData(ctx, meta, result.Data)
+		p.ProduceData(ctx, meta, result.Data)
 	}
 }
 
-func (c *Client) recover(meta *Meta) {
+func (p *Publisher) recover(meta *Meta) {
 	if err := recover(); err != nil {
-		c.logger.Errorf("panic: %v", err)
+		p.logger.Errorf("panic: %v", err)
 		debug.PrintStack()
 
-		if perr := c.produce(meta, internalErrBody); perr != nil {
-			c.logger.Error("failed to produce internal error body while recovering")
+		if perr := p.produce(meta, internalErrBody); perr != nil {
+			p.logger.Error("failed to produce internal error body while recovering")
 		}
 	}
 }
