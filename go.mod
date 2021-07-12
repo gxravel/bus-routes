@@ -24,5 +24,9 @@ require (
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 )
 
+<<<<<<< HEAD
 replace github.com/gxravel/bus-routes/pkg/rmq v0.0.0 => ../bus-routes/pkg/rmq
 >>>>>>> 301fe6e (feat(amqp): support amqp)
+=======
+replace github.com/gxravel/bus-routes/pkg/rmq v0.0.0 => ./pkg/rmq
+>>>>>>> 029079c (fiix(rmq): set package rmq)
