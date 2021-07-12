@@ -109,11 +109,19 @@ func (s *RouteStore) GetListByFilter(ctx context.Context, filter *dataprovider.R
 	qb = s.joins(qb, filter)
 	qb = s.ordersBy(qb, filter)
 
-	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeRoute)
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return nil, err
 	}
-	return result.([]*model.Route), nil
+
+	message := "select " + s.tableName + " by filter with query " + query
+
+	var result = make([]*model.Route, 0)
+	if err := sqlx.SelectContext(ctx, s.db, &result, query, args...); err != nil {
+		return nil, errors.Wrapf(err, message)
+	}
+
+	return result, nil
 }
 
 // Add creates new routes.
@@ -122,17 +130,24 @@ func (s *RouteStore) Add(ctx context.Context, routes ...*model.Route) error {
 	for _, route := range routes {
 		qb = qb.Values(route.BusID, route.StopID, route.Step)
 	}
-	return execContext(ctx, qb, s.tableName, s.txer)
+
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
 // Update updates route's stop_id.
 func (s *RouteStore) Update(ctx context.Context, route *model.Route) error {
-	qb := sq.Update(s.tableName).Set("stop_id", route.StopID).Where(sq.Eq{"bus_id": route.BusID, "step": route.Step})
-	return execContext(ctx, qb, s.tableName, s.txer)
+	qb := sq.Update(s.tableName).
+		Set("stop_id", route.StopID).
+		Where(sq.Eq{
+			"bus_id": route.BusID,
+			"step":   route.Step},
+		)
+
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
 // Delete deletes route depend on received filter.
 func (s *RouteStore) Delete(ctx context.Context, filter *dataprovider.RouteFilter) error {
 	qb := sq.Delete(s.tableName).Where(routeCond(filter))
-	return execContext(ctx, qb, s.tableName, s.txer)
+	return execContext(ctx, qb, s.tableName, s.db)
 }

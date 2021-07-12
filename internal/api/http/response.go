@@ -5,25 +5,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	httpv1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
+)
+
+type MIME string
+
+func (m MIME) String() string { return string(m) }
+
+const (
+	MIMEApplicationJSON MIME = "application/json"
 )
 
 const (
-	headerContentType   = "Content-Type"
-	mimeApplicationJSON = "application/json"
+	HeaderContentType = "Content-Type"
 )
-
-type RangeItemsResponse struct {
-	Items interface{} `json:"items"`
-	Total int64       `json:"total"`
-}
-
-// Response describes http response for api v1.
-type Response struct {
-	Data  interface{}    `json:"data,omitempty"`
-	Error *ierr.APIError `json:"error,omitempty"`
-}
 
 func RespondJSON(ctx context.Context, w http.ResponseWriter, code int, data interface{}) {
 	if data == nil {
@@ -31,11 +28,15 @@ func RespondJSON(ctx context.Context, w http.ResponseWriter, code int, data inte
 		return
 	}
 
-	w.Header().Set(headerContentType, mimeApplicationJSON)
+	w.Header().Set(HeaderContentType, MIMEApplicationJSON.String())
+
 	w.WriteHeader(code)
 
 	if err := json.NewEncoder(w).Encode(&data); err != nil {
-		logger.FromContext(ctx).WithErr(err).Error("encoding data to respond with json")
+		log.
+			FromContext(ctx).
+			WithErr(err).
+			Error("encode data to respond with json")
 	}
 }
 
@@ -56,9 +57,14 @@ func RespondDataOK(ctx context.Context, w http.ResponseWriter, val interface{}) 
 	RespondData(ctx, w, http.StatusOK, val)
 }
 
+// RespondEmptyItems responds with empty items and 200 status code.
+func RespondEmptyItems(ctx context.Context, w http.ResponseWriter) {
+	RespondData(ctx, w, http.StatusOK, httpv1.RangeItemsResponse{})
+}
+
 // RespondData responds with custom status code and JSON in format: {"data": <val>}.
 func RespondData(ctx context.Context, w http.ResponseWriter, code int, val interface{}) {
-	RespondJSON(ctx, w, code, &Response{
+	RespondJSON(ctx, w, code, &httpv1.Response{
 		Data: val,
 	})
 }
@@ -66,11 +72,15 @@ func RespondData(ctx context.Context, w http.ResponseWriter, code int, val inter
 // RespondError converts error to Reason, resolves http status code and responds with APIError.
 func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
 	reason := ierr.ConvertToReason(err)
-	code := ierr.ResolveStatusCode(ierr.Cause(reason.Err))
+	code := ierr.ResolveStatusCode(reason.Err)
 
-	RespondJSON(ctx, w, code, &Response{
-		Error: &ierr.APIError{
-			Reason: reason,
+	RespondJSON(ctx, w, code, &httpv1.Response{
+		Error: &httpv1.APIError{
+			Reason: &httpv1.APIReason{
+				RType:   string(reason.RType),
+				Err:     reason.Error(),
+				Message: reason.Message,
+			},
 		},
 	})
 }

@@ -87,7 +87,10 @@ func New(dst string) (*Config, error) {
 	var c Config
 
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Default().WithErr(err).Errorf("could not read config, using defaults: %v", err)
+		logger.
+			Default().
+			WithErr(err).
+			Errorf("could not read config, using defaults: %v", err)
 	}
 
 	if err := viper.Unmarshal(&c); err != nil {

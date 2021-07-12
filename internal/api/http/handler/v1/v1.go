@@ -1,6 +1,32 @@
 package v1
 
-import "github.com/gxravel/bus-routes/internal/model"
+import (
+	"github.com/gxravel/bus-routes/internal/model"
+)
+
+// Response describes http range itmes response for api v1.
+type RangeItemsResponse struct {
+	Items interface{} `json:"items"`
+	Total int64       `json:"total"`
+}
+
+// Response describes http response for api v1.
+type Response struct {
+	Data  interface{} `json:"data,omitempty"`
+	Error *APIError   `json:"error,omitempty"`
+}
+
+// APIReason describes http model of error reason for api v1.
+type APIReason struct {
+	RType   string `json:"type"`
+	Err     string `json:"error"`
+	Message string `json:"message,omitempty"`
+}
+
+// APIError describes http model of error for api v1.
+type APIError struct {
+	Reason *APIReason `json:"reason"`
+}
 
 // Bus describes http model of bus for api v1.
 type Bus struct {

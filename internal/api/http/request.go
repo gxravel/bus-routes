@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,7 +15,6 @@ func parseQueryInt64(r *http.Request, field string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	if value == "" {
 		return 0, nil
 	}
@@ -25,6 +23,7 @@ func parseQueryInt64(r *http.Request, field string) (int64, error) {
 	if err != nil {
 		return 0, errors.Errorf("%v it not an int", value)
 	}
+
 	return iv, nil
 }
 
@@ -33,24 +32,29 @@ func parseQueryInt(r *http.Request, field string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return int(result), nil
 }
+
 func parseQueryInt8(r *http.Request, field string) (int8, error) {
 	result, err := parseQueryInt64(r, field)
 	if err != nil {
 		return 0, err
 	}
+
 	return int8(result), nil
 }
+
 func parseQueryUint64(r *http.Request, field string) (uint64, error) {
 	result, err := parseQueryInt64(r, field)
 	if err != nil {
 		return 0, err
 	}
+
 	return uint64(result), nil
 }
 
-// ParseQueryParam parses query params for specific field.
+// ParseQueryParam parses query param for specific field.
 func ParseQueryParam(r *http.Request, field string) (string, error) {
 	q := r.URL.Query()
 
@@ -89,6 +93,7 @@ func ParsePaginator(r *http.Request) (*dataprovider.Paginator, error) {
 	return dataprovider.NewPaginator(offset, limit), nil
 }
 
+// ParseQueryInt64Slice parses query []int64 for specific field.
 func ParseQueryInt64Slice(r *http.Request, field string) ([]int64, error) {
 	q := r.URL.Query()
 	params := q[field]
@@ -109,41 +114,51 @@ func ParseQueryInt64Slice(r *http.Request, field string) ([]int64, error) {
 			if s == "" {
 				continue
 			}
+
 			val, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
 				return nil, errors.Errorf("can't parse %v to int", s)
 			}
+
 			vals = append(vals, val)
 		}
 	}
+
 	return vals, nil
 }
 
+// ParseQueryIntSlice parses query []int for specific field.
 func ParseQueryIntSlice(r *http.Request, field string) ([]int, error) {
 	vals, err := ParseQueryInt64Slice(r, field)
 	if err != nil {
 		return nil, err
 	}
+
 	var result = make([]int, 0, len(vals))
 	for _, val := range vals {
 		result = append(result, int(val))
 	}
+
 	return result, nil
 }
 
+// ParseQueryUint8Slice parses query []uint8 for specific field.
 func ParseQueryUint8Slice(r *http.Request, field string) ([]int8, error) {
 	vals, err := ParseQueryInt64Slice(r, field)
+
 	if err != nil {
 		return nil, err
 	}
+
 	var result = make([]int8, 0, len(vals))
 	for _, val := range vals {
 		result = append(result, int8(val))
 	}
+
 	return result, nil
 }
 
-// ParseBusFilter returns filter to buses store depending on client's type.
+// ParseBusFilter parses query 'ids', 'cities', 'nums', and returns the filter.
 func ParseBusFilter(r *http.Request) (*dataprovider.BusFilter, error) {
 	ids, err := ParseQueryInt64Slice(r, "ids")
 	if err != nil {
@@ -161,10 +176,12 @@ func ParseBusFilter(r *http.Request) (*dataprovider.BusFilter, error) {
 	}
 
 	return dataprovider.NewBusFilter().
-		ByIDs(ids...).ByCities(cities...).ByNums(nums...), nil
-
+		ByIDs(ids...).
+		ByCities(cities...).
+		ByNums(nums...), nil
 }
 
+// ParseCityFilter parses query 'ids', 'names', and returns the filter.
 func ParseCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 	ids, err := ParseQueryIntSlice(r, "ids")
 	if err != nil {
@@ -177,10 +194,11 @@ func ParseCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 	}
 
 	return dataprovider.NewCityFilter().
-		ByIDs(ids...).ByNames(names...), nil
-
+		ByIDs(ids...).
+		ByNames(names...), nil
 }
 
+// ParseDeleteCityFilter parses query 'id', 'name', and returns the filter.
 func ParseDeleteCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 	id, err := parseQueryInt(r, "id")
 	if err != nil {
@@ -203,6 +221,7 @@ func ParseDeleteCityFilter(r *http.Request) (*dataprovider.CityFilter, error) {
 	return filter, nil
 }
 
+// ParseStopFilter parses query 'ids', 'cities', 'addresses', and returns the filter.
 func ParseStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
 	ids, err := ParseQueryInt64Slice(r, "ids")
 	if err != nil {
@@ -220,10 +239,12 @@ func ParseStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
 	}
 
 	return dataprovider.NewStopFilter().
-		ByIDs(ids...).ByCities(cities...).ByAddresses(addresses...), nil
-
+		ByIDs(ids...).
+		ByCities(cities...).
+		ByAddresses(addresses...), nil
 }
 
+// ParseDeleteStopFilter parses query 'id', 'address', and returns the filter.
 func ParseDeleteStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
 	id, err := parseQueryInt64(r, "id")
 	if err != nil {
@@ -242,9 +263,11 @@ func ParseDeleteStopFilter(r *http.Request) (*dataprovider.StopFilter, error) {
 	if address != "" {
 		filter = filter.ByAddresses(address)
 	}
+
 	return filter, nil
 }
 
+// ParseRouteFilter parses query 'bus_ids', 'stop_ids', 'steps', and returns the filter.
 func ParseRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
 	busIDs, err := ParseQueryInt64Slice(r, "bus_ids")
 	if err != nil {
@@ -262,9 +285,12 @@ func ParseRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
 	}
 
 	return dataprovider.NewRouteFilter().
-		ByBusIDs(busIDs...).ByStopIDs(stopIDs...).BySteps(steps...), nil
-
+		ByBusIDs(busIDs...).
+		ByStopIDs(stopIDs...).
+		BySteps(steps...), nil
 }
+
+// ParseRouteDetailedFilter parses query 'bus_ids', and returns the filter.
 func ParseRouteDetailedFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
 	busIDs, err := ParseQueryInt64Slice(r, "bus_ids")
 	if err != nil {
@@ -272,9 +298,11 @@ func ParseRouteDetailedFilter(r *http.Request) (*dataprovider.RouteFilter, error
 	}
 
 	return dataprovider.NewRouteFilter().
-		ByBusIDs(busIDs...).ViewDetailed(), nil
+		ByBusIDs(busIDs...).
+		ViewDetailed(), nil
 }
 
+// ParseDeleteRouteFilter parses query 'bus_id', 'stop_id', 'step', and returns the filter.
 func ParseDeleteRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) {
 	busID, err := parseQueryInt64(r, "bus_id")
 	if err != nil {
@@ -291,8 +319,6 @@ func ParseDeleteRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) 
 		return nil, err
 	}
 
-	fmt.Printf("step: %v\n", step)
-
 	filter := dataprovider.NewRouteFilter()
 	if busID != 0 {
 		filter = filter.ByBusIDs(busID)
@@ -303,6 +329,6 @@ func ParseDeleteRouteFilter(r *http.Request) (*dataprovider.RouteFilter, error) 
 	if step != 0 {
 		filter = filter.BySteps(step)
 	}
-	fmt.Printf("step filter: %v\n", filter.Steps)
+
 	return filter, nil
 }

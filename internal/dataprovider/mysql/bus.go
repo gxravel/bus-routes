@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gxravel/bus-routes/internal/dataprovider"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 
 	sq "github.com/Masterminds/squirrel"
@@ -59,9 +59,11 @@ func (s *BusStore) columns(filter *dataprovider.BusFilter) []string {
 		"city.name as name",
 		"num",
 	}
+
 	if filter.DoPreferIDs {
 		result[1] = "bus.city_id"
 	}
+
 	return result
 }
 
@@ -69,6 +71,7 @@ func (s *BusStore) joins(qb sq.SelectBuilder, filter *dataprovider.BusFilter) sq
 	if !filter.DoPreferIDs {
 		qb = qb.Join("city ON bus.city_id = city.id")
 	}
+
 	return qb
 }
 
@@ -101,11 +104,19 @@ func (s *BusStore) GetListByFilter(ctx context.Context, filter *dataprovider.Bus
 		qb = withPaginator(qb, filter.Paginator)
 	}
 
-	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeBus)
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return nil, err
 	}
-	return result.([]*model.Bus), nil
+
+	message := "select " + s.tableName + " by filter with query " + query
+
+	var result = make([]*model.Bus, 0)
+	if err := sqlx.SelectContext(ctx, s.db, &result, query, args...); err != nil {
+		return nil, errors.Wrapf(err, message)
+	}
+
+	return result, nil
 }
 
 // Add creates new buses skipping those of with wrong city.
@@ -116,28 +127,26 @@ func (s *BusStore) Add(ctx context.Context, buses ...*model.Bus) error {
 	}
 
 	f := func(tx *dataprovider.Tx) error {
-		err := CitiesIDs(ctx, ids, s.db, s.txer, tx)
-		if err != nil {
+		if err := getCitiesIDs(ctx, ids, s.db, s.txer, tx); err != nil {
 			return err
 		}
+
 		qb := sq.Insert("bus").Columns("city_id", "num")
 		for _, bus := range buses {
 			id := ids[bus.City]
 			if id == 0 {
-				logger.FromContext(ctx).Debugf("bus [%s, %s] skipped", bus.City, bus.Number)
+				log.FromContext(ctx).
+					Debugf("bus [%s, %s] skipped", bus.City, bus.Number)
 				continue
 			}
+
 			qb = qb.Values(id, bus.Number)
 		}
 
-		query, args, _, err := toSql(ctx, qb, s.tableName)
-		if err != nil {
+		if err := execContext(ctx, qb, s.tableName, tx); err != nil {
 			return err
 		}
 
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "insert buses with query %s", query)
-		}
 		return nil
 	}
 

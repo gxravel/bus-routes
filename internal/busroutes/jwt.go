@@ -3,14 +3,14 @@ package busroutes
 import (
 	"context"
 
-	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	httpv1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 	"github.com/gxravel/bus-routes/internal/jwt"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
-func (r *BusRoutes) NewJWT(ctx context.Context, user *v1.User) (*v1.Token, error) {
+func (r *BusRoutes) NewJWT(ctx context.Context, user *httpv1.User) (*httpv1.Token, error) {
 	jwtUser := &jwt.User{
 		ID:    user.ID,
 		Email: user.Email,
@@ -20,14 +20,15 @@ func (r *BusRoutes) NewJWT(ctx context.Context, user *v1.User) (*v1.Token, error
 	if err != nil {
 		return nil, err
 	}
-	return &v1.Token{
+	return &httpv1.Token{
 		Token:  details.String,
 		Expiry: details.Expiry,
 	}, nil
 }
 
-func (r *BusRoutes) GetUserByToken(ctx context.Context, token string, allowedTypes ...model.UserType) (*v1.User, error) {
-	logger := logger.FromContext(ctx).WithStr("token", token)
+// GetUserByToken returns user withdrawn from the JWT token claims, unless it is of not allowed type.
+func (r *BusRoutes) GetUserByToken(ctx context.Context, token string, allowedTypes ...model.UserType) (*httpv1.User, error) {
+	logger := log.FromContext(ctx).WithStr("token", token)
 
 	if token == "" {
 		err := ierr.NewReason(ierr.ErrInvalidToken)
@@ -39,7 +40,7 @@ func (r *BusRoutes) GetUserByToken(ctx context.Context, token string, allowedTyp
 		return nil, err
 	}
 
-	user := &v1.User{
+	user := &httpv1.User{
 		ID:    jwtUser.ID,
 		Email: jwtUser.Email,
 		Type:  jwtUser.Type,
@@ -48,8 +49,13 @@ func (r *BusRoutes) GetUserByToken(ctx context.Context, token string, allowedTyp
 	types := model.UserTypes(allowedTypes)
 	if !types.Exists(user.Type) {
 		err := ierr.NewReason(ierr.ErrPermissionDenied)
-		logger.WithField("user", user).Warn(err.Error())
+
+		logger.
+			WithField("user", user).
+			Warn(err.Error())
+
 		return nil, err
 	}
+
 	return user, nil
 }

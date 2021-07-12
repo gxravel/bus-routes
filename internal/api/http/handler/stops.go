@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	httpv1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 )
 
@@ -27,7 +27,7 @@ func (s *Server) getStops(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.RespondDataOK(ctx, w, api.RangeItemsResponse{
+	api.RespondDataOK(ctx, w, httpv1.RangeItemsResponse{
 		Items: stops,
 		Total: int64(len(stops)),
 	})
@@ -36,12 +36,11 @@ func (s *Server) getStops(w http.ResponseWriter, r *http.Request) {
 func (s *Server) addStops(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var stops = make([]*v1.Stop, 0)
+	var stops = make([]*httpv1.Stop, 0)
 	if err := s.processRequest(r, &stops); err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
-
 	if len(stops) == 0 {
 		api.RespondError(ctx, w, errMustProvideStop)
 		return
@@ -58,12 +57,11 @@ func (s *Server) addStops(w http.ResponseWriter, r *http.Request) {
 func (s *Server) updateStop(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var stop = &v1.Stop{}
+	var stop = &httpv1.Stop{}
 	if err := s.processRequest(r, stop); err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
-
 	if stop.ID == 0 {
 		api.RespondError(ctx, w, errMustProvideStop)
 		return

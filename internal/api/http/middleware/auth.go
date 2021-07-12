@@ -17,8 +17,8 @@ func RegisterUserTypes(types ...model.UserType) func(http.Handler) http.Handler 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			ctx = context.WithValue(ctx, busroutescontext.UserTypesKey, model.UserTypes(types))
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
@@ -55,7 +55,7 @@ const (
 func getAuthToken(r *http.Request) string {
 	tokens, ok := r.Header[AuthHeader]
 	if ok {
-		if len(tokens) == 1 {
+		if len(tokens) > 0 {
 			return strings.TrimPrefix(tokens[0], "Bearer ")
 		}
 	}

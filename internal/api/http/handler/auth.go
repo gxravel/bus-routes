@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	httpv1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 	"github.com/gxravel/bus-routes/internal/model"
@@ -18,13 +18,14 @@ var (
 )
 
 // validateUserCredentials validates user password and email, and transfroms the email to lowercase.
-func validateUserCredentials(user *v1.User) error {
+func validateUserCredentials(user *httpv1.User) error {
 	if !regPass.MatchString(user.Password) {
 		return ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid password: min length - 4")
 	}
 	if !regEmail.MatchString(user.Email) {
 		return ierr.NewReason(ierr.ErrValidationFailed).WithMessage("invalid email")
 	}
+
 	user.Email = strings.ToLower(user.Email)
 	return nil
 }
@@ -32,7 +33,7 @@ func validateUserCredentials(user *v1.User) error {
 func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var user = &v1.User{}
+	var user = &httpv1.User{}
 	if err := s.processRequest(r, user); err != nil {
 		api.RespondError(ctx, w, err)
 		return
@@ -64,7 +65,7 @@ func (s *Server) signup(w http.ResponseWriter, r *http.Request) {
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var user = &v1.User{}
+	var user = &httpv1.User{}
 	if err := s.processRequest(r, user); err != nil {
 		api.RespondError(ctx, w, err)
 		return

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	httpv1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 )
 
@@ -27,7 +27,7 @@ func (s *Server) getRoutes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.RespondDataOK(ctx, w, api.RangeItemsResponse{
+	api.RespondDataOK(ctx, w, httpv1.RangeItemsResponse{
 		Items: routes,
 		Total: int64(len(routes)),
 	})
@@ -49,7 +49,7 @@ func (s *Server) getDetailedRoutes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.RespondDataOK(ctx, w, api.RangeItemsResponse{
+	api.RespondDataOK(ctx, w, httpv1.RangeItemsResponse{
 		Items: routes,
 		Total: int64(len(routes)),
 	})
@@ -58,12 +58,11 @@ func (s *Server) getDetailedRoutes(w http.ResponseWriter, r *http.Request) {
 func (s *Server) addRoutes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var routes = make([]*v1.Route, 0)
+	var routes = make([]*httpv1.Route, 0)
 	if err := s.processRequest(r, &routes); err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
-
 	if len(routes) == 0 {
 		api.RespondError(ctx, w, errMustProvideRoute)
 		return
@@ -80,12 +79,11 @@ func (s *Server) addRoutes(w http.ResponseWriter, r *http.Request) {
 func (s *Server) updateRoute(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var route = &v1.Route{}
+	var route = &httpv1.Route{}
 	if err := s.processRequest(r, route); err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
-
 	if route.BusID == 0 || route.Step == 0 {
 		api.RespondError(ctx, w, errMustProvideRoute)
 		return
