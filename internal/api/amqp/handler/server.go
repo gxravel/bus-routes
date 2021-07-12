@@ -12,7 +12,7 @@ import (
 type Server struct {
 	broker    *rmq.Client
 	logger    log.Logger
-	busroutes *busroutes.BusRoutes
+	busroutes *busroutes.Busroutes
 	handlers  []func(context.Context)
 }
 
@@ -20,7 +20,7 @@ type Server struct {
 // linking handlers with the required meta and amqp.Delivery.
 func NewServer(
 	cfg config.Config,
-	busroutes *busroutes.BusRoutes,
+	busroutes *busroutes.Busroutes,
 	logger log.Logger,
 ) (*Server, error) {
 

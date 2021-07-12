@@ -24,7 +24,7 @@ func RegisterUserTypes(types ...model.UserType) func(http.Handler) http.Handler 
 }
 
 // Auth searches user by token and adds his data to context.
-func Auth(busroutes *busroutes.BusRoutes) func(http.Handler) http.Handler {
+func Auth(busroutes *busroutes.Busroutes) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()

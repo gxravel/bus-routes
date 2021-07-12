@@ -8,7 +8,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
-func (r *BusRoutes) GetCities(ctx context.Context, filter *dataprovider.CityFilter) ([]*httpv1.City, error) {
+func (r *Busroutes) GetCities(ctx context.Context, filter *dataprovider.CityFilter) ([]*httpv1.City, error) {
 	dbCities, err := r.cityStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -17,15 +17,15 @@ func (r *BusRoutes) GetCities(ctx context.Context, filter *dataprovider.CityFilt
 	return toV1Cities(dbCities...), nil
 }
 
-func (r *BusRoutes) AddCities(ctx context.Context, cities ...*httpv1.City) error {
+func (r *Busroutes) AddCities(ctx context.Context, cities ...*httpv1.City) error {
 	return r.cityStore.Add(ctx, toDBCities(cities...)...)
 }
 
-func (r *BusRoutes) UpdateCity(ctx context.Context, city *httpv1.City) error {
+func (r *Busroutes) UpdateCity(ctx context.Context, city *httpv1.City) error {
 	return r.cityStore.Update(ctx, toDBCities(city)[0])
 }
 
-func (r *BusRoutes) DeleteCity(ctx context.Context, filter *dataprovider.CityFilter) error {
+func (r *Busroutes) DeleteCity(ctx context.Context, filter *dataprovider.CityFilter) error {
 	return r.cityStore.Delete(ctx, filter)
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
-func (r *BusRoutes) GetRoutes(ctx context.Context, filter *dataprovider.RouteFilter) ([]*htppv1.Route, error) {
+func (r *Busroutes) GetRoutes(ctx context.Context, filter *dataprovider.RouteFilter) ([]*htppv1.Route, error) {
 	dbRoutes, err := r.routeStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -17,7 +17,7 @@ func (r *BusRoutes) GetRoutes(ctx context.Context, filter *dataprovider.RouteFil
 	return toV1Routes(dbRoutes...), nil
 }
 
-func (r *BusRoutes) GetDetailedRoutes(ctx context.Context, filter *dataprovider.RouteFilter) ([]*htppv1.RouteDetailed, error) {
+func (r *Busroutes) GetDetailedRoutes(ctx context.Context, filter *dataprovider.RouteFilter) ([]*htppv1.RouteDetailed, error) {
 	dbRoutes, err := r.routeStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -26,15 +26,15 @@ func (r *BusRoutes) GetDetailedRoutes(ctx context.Context, filter *dataprovider.
 	return toV1RoutesDetailed(dbRoutes...), nil
 }
 
-func (r *BusRoutes) AddRoutes(ctx context.Context, routes ...*htppv1.Route) error {
+func (r *Busroutes) AddRoutes(ctx context.Context, routes ...*htppv1.Route) error {
 	return r.routeStore.Add(ctx, toDBRoutes(routes...)...)
 }
 
-func (r *BusRoutes) UpdateRoute(ctx context.Context, route *htppv1.Route) error {
+func (r *Busroutes) UpdateRoute(ctx context.Context, route *htppv1.Route) error {
 	return r.routeStore.Update(ctx, toDBRoutes(route)[0])
 }
 
-func (r *BusRoutes) DeleteRoute(ctx context.Context, filter *dataprovider.RouteFilter) error {
+func (r *Busroutes) DeleteRoute(ctx context.Context, filter *dataprovider.RouteFilter) error {
 	return r.routeStore.Delete(ctx, filter)
 }
 
