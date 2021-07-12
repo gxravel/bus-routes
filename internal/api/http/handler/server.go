@@ -8,7 +8,7 @@ import (
 	mw "github.com/gxravel/bus-routes/internal/api/http/middleware"
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 
 	"github.com/go-chi/chi"
@@ -16,14 +16,14 @@ import (
 
 type Server struct {
 	*http.Server
-	logger    logger.Logger
+	logger    log.Logger
 	busroutes *busroutes.BusRoutes
 }
 
 func NewServer(
 	cfg *config.Config,
 	busroutes *busroutes.BusRoutes,
-	logger logger.Logger,
+	logger log.Logger,
 ) *Server {
 	srv := &Server{
 		Server: &http.Server{
@@ -31,7 +31,7 @@ func NewServer(
 			ReadTimeout:  cfg.API.ReadTimeout,
 			WriteTimeout: cfg.API.WriteTimeout,
 		},
-		logger:    logger.WithStr("module", "api:http"),
+		logger:    logger.WithModule("api:http"),
 		busroutes: busroutes,
 	}
 
@@ -43,10 +43,6 @@ func NewServer(
 	if cfg.API.ServeSwagger {
 		registerSwagger(r)
 	}
-
-	r.Route("/internal", func(r chi.Router) {
-		r.Get("/health", srv.getHealth)
-	})
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {

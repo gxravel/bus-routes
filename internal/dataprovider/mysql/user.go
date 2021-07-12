@@ -42,7 +42,6 @@ func userCond(f *dataprovider.UserFilter) sq.Sqlizer {
 	if len(f.IDs) > 0 {
 		eq["user.id"] = f.IDs
 	}
-
 	if len(f.Emails) > 0 {
 		eq["email"] = f.Emails
 	}
@@ -57,13 +56,17 @@ func (s *UserStore) columns(filter *dataprovider.UserFilter) []string {
 			"hashed_password",
 		}
 	}
+
 	var result []string
+
 	switch {
 	case filter.DoSelectPassword:
 		result = append(result, "hashed_password")
 		fallthrough
+
 	case filter.DoSelectType:
 		result = append(result, "type")
+
 	default:
 		result = []string{
 			"id",
@@ -71,6 +74,7 @@ func (s *UserStore) columns(filter *dataprovider.UserFilter) []string {
 			"type",
 		}
 	}
+
 	return result
 }
 
@@ -97,11 +101,19 @@ func (s *UserStore) GetListByFilter(ctx context.Context, filter *dataprovider.Us
 		From(s.tableName).
 		Where(userCond(filter))
 
-	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeUser)
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return nil, err
 	}
-	return result.([]*model.User), nil
+
+	message := "select " + s.tableName + " by filter with query " + query
+
+	var result = make([]*model.User, 0)
+	if err := sqlx.SelectContext(ctx, s.db, &result, query, args...); err != nil {
+		return nil, errors.Wrapf(err, message)
+	}
+
+	return result, nil
 }
 
 // Add creates new users.
@@ -131,18 +143,27 @@ func (s *UserStore) Add(ctx context.Context, users ...*model.User) (int64, error
 
 // Update updates user's email and type.
 func (s *UserStore) Update(ctx context.Context, user *model.User) error {
-	qb := sq.Update(s.tableName).Set("email", user.Email).Set("type", user.Type).Where(sq.Eq{"id": user.ID})
-	return execContext(ctx, qb, s.tableName, s.txer)
+	qb := sq.Update(s.tableName).
+		SetMap(map[string]interface{}{
+			"email": user.Email,
+			"type":  user.Type,
+		}).
+		Where(sq.Eq{"id": user.ID})
+
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
 // Delete deletes user depend on received filter.
 func (s *UserStore) Delete(ctx context.Context, filter *dataprovider.UserFilter) error {
 	qb := sq.Delete(s.tableName).Where(userCond(filter))
-	return execContext(ctx, qb, s.tableName, s.txer)
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
 // UpdatePassword updates user's hashed_password.
 func (s *UserStore) UpdatePassword(ctx context.Context, hashedPassword []byte, filter *dataprovider.UserFilter) error {
-	qb := sq.Update(s.tableName).Set("hashed_password", hashedPassword).Where(userCond(filter))
-	return execContext(ctx, qb, s.tableName, s.txer)
+	qb := sq.Update(s.tableName).
+		Set("hashed_password", hashedPassword).
+		Where(userCond(filter))
+
+	return execContext(ctx, qb, s.tableName, s.db)
 }

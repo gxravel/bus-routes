@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gxravel/bus-routes/internal/dataprovider"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 
 	sq "github.com/Masterminds/squirrel"
@@ -59,9 +59,11 @@ func (s *StopStore) columns(filter *dataprovider.StopFilter) []string {
 		"city.name as city",
 		"address",
 	}
+
 	if filter.DoPreferIDs {
 		result[1] = "stop.city_id"
 	}
+
 	return result
 }
 
@@ -69,6 +71,7 @@ func (s *StopStore) joins(qb sq.SelectBuilder, filter *dataprovider.StopFilter) 
 	if !filter.DoPreferIDs {
 		qb = qb.Join("city ON stop.city_id = city.id")
 	}
+
 	return qb
 }
 
@@ -97,11 +100,19 @@ func (s *StopStore) GetListByFilter(ctx context.Context, filter *dataprovider.St
 
 	qb = s.joins(qb, filter)
 
-	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeStop)
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return nil, err
 	}
-	return result.([]*model.Stop), nil
+
+	message := "select " + s.tableName + " by filter with query " + query
+
+	var result = make([]*model.Stop, 0)
+	if err := sqlx.SelectContext(ctx, s.db, &result, query, args...); err != nil {
+		return nil, errors.Wrapf(err, message)
+	}
+
+	return result, nil
 }
 
 // Add creates new stops skipping those of with wrong city.
@@ -112,28 +123,25 @@ func (s *StopStore) Add(ctx context.Context, stops ...*model.Stop) error {
 	}
 
 	f := func(tx *dataprovider.Tx) error {
-		err := CitiesIDs(ctx, ids, s.db, s.txer, tx)
-		if err != nil {
+		if err := getCitiesIDs(ctx, ids, s.db, s.txer, tx); err != nil {
 			return err
 		}
+
 		qb := sq.Insert("stop").Columns("city_id", "address")
 		for _, stop := range stops {
 			id := ids[stop.City]
 			if id < 0 {
-				logger.FromContext(ctx).Debugf("stop [%s, %s] skipped", stop.City, stop.Address)
+				log.FromContext(ctx).
+					Debugf("stop [%s, %s] skipped", stop.City, stop.Address)
 				continue
 			}
 			qb = qb.Values(id, stop.Address)
 		}
 
-		query, args, _, err := toSql(ctx, qb, s.tableName)
-		if err != nil {
+		if err := execContext(ctx, qb, s.tableName, tx); err != nil {
 			return err
 		}
 
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return errors.Wrapf(err, "inserting stops with query %s", query)
-		}
 		return nil
 	}
 
@@ -143,32 +151,28 @@ func (s *StopStore) Add(ctx context.Context, stops ...*model.Stop) error {
 // Update updates stop's city_id and address.
 func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 	f := func(tx *dataprovider.Tx) error {
-		id, err := CityID(ctx, stop.City, s.db, s.txer, tx)
+		id, err := getCityID(ctx, stop.City, s.db, s.txer, tx)
 		if err != nil {
 			return err
 		}
 		if id == 0 {
 			err := errors.Errorf("did not found the city %s", stop.City)
-			logger.FromContext(ctx).Debug(err.Error())
-			return err
-		}
-		qb := sq.Update(s.tableName).Set("city_id", id).Set("address", stop.Address).Where(sq.Eq{"id": stop.ID})
-		query, args, _, err := toSql(ctx, qb, s.tableName)
-		if err != nil {
+			log.FromContext(ctx).Debug(err.Error())
+
 			return err
 		}
 
-		result, err := tx.ExecContext(ctx, query, args...)
-		if err != nil {
-			return errors.Wrapf(err, "updating stop with query %s", query)
+		qb := sq.Update(s.tableName).
+			SetMap(map[string]interface{}{
+				"city_id": id,
+				"address": stop.Address,
+			}).
+			Where(sq.Eq{"id": stop.ID})
+
+		if err := execContext(ctx, qb, s.tableName, s.db); err != nil {
+			return err
 		}
-		num, err := result.RowsAffected()
-		if err != nil {
-			return errors.Wrap(err, "failed to call RowsAffected")
-		}
-		if num == 0 {
-			return errors.New("no rows affected")
-		}
+
 		return nil
 	}
 
@@ -178,5 +182,5 @@ func (s *StopStore) Update(ctx context.Context, stop *model.Stop) error {
 // Delete deletes stop depend on received filter.
 func (s *StopStore) Delete(ctx context.Context, filter *dataprovider.StopFilter) error {
 	qb := sq.Delete(s.tableName).Where(stopCond(filter))
-	return execContext(ctx, qb, s.tableName, s.txer)
+	return execContext(ctx, qb, s.tableName, s.db)
 }

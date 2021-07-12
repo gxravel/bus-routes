@@ -7,7 +7,7 @@ import (
 
 	"github.com/gxravel/bus-routes/internal/config"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/model"
 	"github.com/gxravel/bus-routes/internal/storage"
 
@@ -74,11 +74,15 @@ func create(ctx context.Context, user *User, expiry time.Duration, key string) (
 	token.Subject = claims.User.ID
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+
 	var err error
 	token.String, err = jwtToken.SignedString([]byte(key))
 	if err != nil {
-		logger.FromContext(ctx).WithErr(err).Fatal("failed to sign jwt token with the key")
+		log.FromContext(ctx).
+			WithErr(err).
+			Fatal("failed to sign jwt token with the key")
 	}
+
 	return token, err
 }
 
@@ -88,8 +92,11 @@ func (m *JWT) Parse(tokenString string) (*Claims, error) {
 
 	jwtToken, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, ierr.NewReason(ierr.ErrInvalidJWT).WithMessage(fmt.Sprintf("unexpected signing method: %v", t.Header["alg"]))
+			return nil, ierr.
+				NewReason(ierr.ErrInvalidJWT).
+				WithMessage(fmt.Sprintf("unexpected signing method: %v", t.Header["alg"]))
 		}
+
 		return key, nil
 	})
 	if err != nil || !jwtToken.Valid {
@@ -100,6 +107,7 @@ func (m *JWT) Parse(tokenString string) (*Claims, error) {
 	if !ok {
 		return nil, ierr.NewReason(ierr.ErrInvalidToken).WithMessage("failed to get claims")
 	}
+
 	return claims, nil
 }
 
@@ -121,16 +129,18 @@ func (m *JWT) Delete(ctx context.Context, tokenUUID string) error {
 
 // SetNew returns the access token.
 func (m *JWT) SetNew(ctx context.Context, user *User) (*Details, error) {
-	logger := logger.FromContext(ctx)
+	logger := log.FromContext(ctx)
+
 	accessToken, err := create(ctx, user, m.config.JWT.AccessExpiry, m.config.JWT.AccessKey)
 	if err != nil {
 		return nil, err
 	}
-	err = m.save(ctx, accessToken)
-	if err != nil {
+
+	if err = m.save(ctx, accessToken); err != nil {
 		logger.WithErr(err).Error("failed to save token to storage")
 		return nil, err
 	}
+
 	return accessToken, nil
 }
 
@@ -140,6 +150,7 @@ func (m *JWT) Verify(ctx context.Context, tokenString string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err := m.CheckIfExists(ctx, claims.Id); err != nil {
 		return nil, ierr.NewReason(ierr.ErrTokenExpired)
 	}

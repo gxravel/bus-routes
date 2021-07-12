@@ -75,11 +75,19 @@ func (s *CityStore) GetListByFilter(ctx context.Context, filter *dataprovider.Ci
 		From(s.tableName).
 		Where(cityCond(filter))
 
-	result, err := selectContext(ctx, qb, s.tableName, s.db, TypeCity)
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return nil, err
 	}
-	return result.([]*model.City), nil
+
+	message := "select " + s.tableName + " by filter with query " + query
+
+	var result = make([]*model.City, 0)
+	if err := sqlx.SelectContext(ctx, s.db, &result, query, args...); err != nil {
+		return nil, errors.Wrapf(err, message)
+	}
+
+	return result, nil
 }
 
 // Add creates new cities.
@@ -88,23 +96,27 @@ func (s *CityStore) Add(ctx context.Context, cities ...*model.City) error {
 	for _, city := range cities {
 		qb = qb.Values(city.Name)
 	}
-	return execContext(ctx, qb, s.tableName, s.txer)
+
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
 // Update updates city name.
 func (s *CityStore) Update(ctx context.Context, city *model.City) error {
-	qb := sq.Update(s.tableName).Set("name", city.Name).Where(sq.Eq{"id": city.ID})
-	return execContext(ctx, qb, s.tableName, s.txer)
+	qb := sq.Update(s.tableName).
+		Set("name", city.Name).
+		Where(sq.Eq{"id": city.ID})
+
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
 // Delete deletes city depend on received filter.
 func (s *CityStore) Delete(ctx context.Context, filter *dataprovider.CityFilter) error {
 	qb := sq.Delete(s.tableName).Where(cityCond(filter))
-	return execContext(ctx, qb, s.tableName, s.txer)
+	return execContext(ctx, qb, s.tableName, s.db)
 }
 
-// CitiesIDs return the ids as a map of names.
-func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) error {
+// getCitiesIDs return the ids as a map of names.
+func getCitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) error {
 	var names = make([]string, 0, len(ids))
 	for name := range ids {
 		names = append(names, name)
@@ -112,6 +124,7 @@ func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer
 
 	cityStore := NewCityStore(db, txer).WithTx(tx)
 	cityFilter := dataprovider.NewCityFilter().ByNames(names...)
+
 	cities, err := cityStore.GetListByFilter(ctx, cityFilter)
 	if err != nil {
 		return errors.Wrap(err, "getting cities from city store")
@@ -119,19 +132,23 @@ func CitiesIDs(ctx context.Context, ids map[string]int, db sqlx.ExtContext, txer
 	if len(cities) == 0 {
 		return errors.New("did not find a city")
 	}
+
 	for _, city := range cities {
 		ids[city.Name] = city.ID
 	}
+
 	return nil
 }
 
-// CityID returns the id by name.
-func CityID(ctx context.Context, name string, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) (int, error) {
+// getCityID returns the id by name.
+func getCityID(ctx context.Context, name string, db sqlx.ExtContext, txer dataprovider.Txer, tx *dataprovider.Tx) (int, error) {
 	cityStore := NewCityStore(db, txer).WithTx(tx)
 	cityFilter := dataprovider.NewCityFilter().ByNames(name)
+
 	city, err := cityStore.GetByFilter(ctx, cityFilter)
 	if err != nil {
 		return 0, errors.Wrap(err, "getting city from city store")
 	}
+
 	return city.ID, nil
 }

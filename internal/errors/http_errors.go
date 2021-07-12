@@ -2,11 +2,6 @@ package errors
 
 import "net/http"
 
-// APIError describes http model of error.
-type APIError struct {
-	Reason *Reason `json:"reason"`
-}
-
 type HTTPStatusCoder interface {
 	HTTPStatusCode() int
 }
@@ -64,6 +59,16 @@ func (e ConflictError) HTTPStatusCode() int { return http.StatusConflict }
 
 const (
 	ErrConflict ConflictError = "conflict"
+)
+
+type InternalServerError string
+
+func (e InternalServerError) Type() ReasonType    { return ReasonUnknownError }
+func (e InternalServerError) Error() string       { return string(e) }
+func (e InternalServerError) HTTPStatusCode() int { return http.StatusInternalServerError }
+
+const (
+	ErrInternalServer InternalServerError = "internal server error"
 )
 
 func ResolveStatusCode(err error) int {

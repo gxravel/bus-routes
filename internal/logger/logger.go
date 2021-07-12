@@ -28,6 +28,7 @@ type Logger interface {
 
 	WithErr(err error) Logger
 	WithStr(key string, val string) Logger
+	WithModule(val string) Logger
 }
 
 const (
@@ -146,4 +147,9 @@ func (zl *logger) WithErr(err error) Logger {
 func (zl *logger) WithStr(key string, val string) Logger {
 	var outzl = zl.With().Str(key, val).Logger()
 	return &logger{Logger: &outzl}
+}
+
+// WithModule implements WithModule method for logger.
+func (zl *logger) WithModule(val string) Logger {
+	return zl.WithStr("module", val)
 }

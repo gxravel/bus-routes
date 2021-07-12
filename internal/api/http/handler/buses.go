@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	api "github.com/gxravel/bus-routes/internal/api/http"
-	v1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
+	httpv1 "github.com/gxravel/bus-routes/internal/api/http/handler/v1"
 	ierr "github.com/gxravel/bus-routes/internal/errors"
 )
 
@@ -23,7 +23,7 @@ func (s *Server) getBuses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.RespondDataOK(ctx, w, api.RangeItemsResponse{
+	api.RespondDataOK(ctx, w, httpv1.RangeItemsResponse{
 		Items: buses,
 		Total: int64(len(buses)),
 	})
@@ -32,14 +32,13 @@ func (s *Server) getBuses(w http.ResponseWriter, r *http.Request) {
 func (s *Server) addBuses(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var buses = make([]*v1.Bus, 0)
+	var buses = make([]*httpv1.Bus, 0)
 	if err := s.processRequest(r, &buses); err != nil {
 		api.RespondError(ctx, w, err)
 		return
 	}
-
 	if len(buses) == 0 {
-		api.RespondError(ctx, w, ierr.NewReason(ierr.ErrMustProvide).WithMessage("must provide buses"))
+		api.RespondError(ctx, w, ierr.NewReason(ierr.ErrMustProvide).WithMessage("buses"))
 		return
 	}
 

@@ -24,11 +24,13 @@ func NewCityFilter() *CityFilter {
 	return &CityFilter{}
 }
 
+// ByIDs filters by city.id.
 func (f *CityFilter) ByIDs(ids ...int) *CityFilter {
 	f.IDs = ids
 	return f
 }
 
+// ByNames filters by city.name.
 func (f *CityFilter) ByNames(names ...string) *CityFilter {
 	f.Names = names
 	return f

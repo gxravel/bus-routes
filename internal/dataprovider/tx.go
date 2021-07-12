@@ -3,8 +3,7 @@ package dataprovider
 import (
 	"context"
 
-	"github.com/gxravel/bus-routes/internal/logger"
-
+	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
@@ -17,7 +16,7 @@ type Txer interface {
 	New() (*Tx, error)
 }
 
-func EndTransaction(tx *Tx, logger logger.Logger, err error) error {
+func EndTransaction(tx *Tx, logger log.Logger, err error) error {
 	if err == nil {
 		if cerr := tx.Commit(); cerr != nil {
 			return errors.Wrap(cerr, "can not commit transaction")
@@ -36,7 +35,7 @@ func EndTransaction(tx *Tx, logger logger.Logger, err error) error {
 }
 
 func BeginAutoCommitedTx(ctx context.Context, txer Txer, f func(*Tx) error) error {
-	logger := logger.FromContext(ctx)
+	logger := log.FromContext(ctx)
 	logger.Debug("begin transaction")
 	tx, err := txer.New()
 	if err != nil {

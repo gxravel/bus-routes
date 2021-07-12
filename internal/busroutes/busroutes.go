@@ -5,13 +5,13 @@ import (
 	"github.com/gxravel/bus-routes/internal/database"
 	"github.com/gxravel/bus-routes/internal/dataprovider"
 	"github.com/gxravel/bus-routes/internal/jwt"
-	"github.com/gxravel/bus-routes/internal/logger"
+	log "github.com/gxravel/bus-routes/internal/logger"
 )
 
 type BusRoutes struct {
 	config       *config.Config
 	db           *database.Client
-	logger       logger.Logger
+	logger       log.Logger
 	busStore     dataprovider.BusStore
 	cityStore    dataprovider.CityStore
 	stopStore    dataprovider.StopStore
@@ -24,7 +24,7 @@ type BusRoutes struct {
 func New(
 	config *config.Config,
 	db *database.Client,
-	logger logger.Logger,
+	logger log.Logger,
 	busStore dataprovider.BusStore,
 	cityStore dataprovider.CityStore,
 	stopStore dataprovider.StopStore,

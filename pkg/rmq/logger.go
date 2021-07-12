@@ -1,4 +1,4 @@
-package rmq
+package rabbitmq
 
 type Logger interface {
 	Debugf(format string, data ...interface{})

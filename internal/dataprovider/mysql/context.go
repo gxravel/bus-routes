@@ -2,98 +2,43 @@ package mysql
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/gxravel/bus-routes/internal/dataprovider"
-	"github.com/gxravel/bus-routes/internal/logger"
-	"github.com/gxravel/bus-routes/internal/model"
+	log "github.com/gxravel/bus-routes/internal/logger"
+	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
-type ResultType uint8
-
-const (
-	TypeBus ResultType = iota
-	TypeCity
-	TypeStop
-	TypeRoute
-	TypeUser
+var (
+	errNoRowsAffected = errors.New("no rows affected")
 )
 
 // execContext builds the query that doesn't return rows and executes it.
-func execContext(ctx context.Context, qb interface{}, entity string, txer dataprovider.Txer) error {
+func execContext(ctx context.Context, qb interface{}, entity string, db sqlx.ExtContext) error {
 	query, args, codewords, err := toSql(ctx, qb, entity)
 	if err != nil {
 		return err
 	}
 
-	f := func(tx *dataprovider.Tx) error {
-		result, err := tx.ExecContext(ctx, query, args...)
-		if err != nil {
-			return errors.Wrapf(err, codewords+" with query %s", query)
-		}
-		num, err := result.RowsAffected()
-		if err != nil {
-			return errors.Wrap(err, "failed to call RowsAffected")
-		}
-		if num == 0 {
-			return errors.New("no rows affected")
-		}
-		return nil
-	}
-
-	return dataprovider.BeginAutoCommitedTx(ctx, txer, f)
-}
-
-// selectContext executes a query depend on ResultType
-func selectContext(ctx context.Context, qb sq.SelectBuilder, entity string, db sqlx.ExtContext, resultType ResultType) (interface{}, error) {
-	query, args, codewords, err := toSql(ctx, qb, entity)
+	result, err := db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return errors.Wrapf(err, codewords+" with query %s", query)
 	}
 
-	msg := fmt.Sprintf(codewords+" by filter with query %s", query)
-
-	switch resultType {
-	case TypeCity:
-		var result = make([]*model.City, 0)
-		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
-			return nil, errors.Wrapf(err, msg)
-		}
-		return result, nil
-	case TypeBus:
-		var result = make([]*model.Bus, 0)
-		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
-			return nil, errors.Wrapf(err, msg)
-		}
-		return result, nil
-	case TypeStop:
-		var result = make([]*model.Stop, 0)
-		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
-			return nil, errors.Wrapf(err, msg)
-		}
-		return result, nil
-	case TypeRoute:
-		var result = make([]*model.Route, 0)
-		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
-			return nil, errors.Wrapf(err, msg)
-		}
-		return result, nil
-	case TypeUser:
-		var result = make([]*model.User, 0)
-		if err := sqlx.SelectContext(ctx, db, &result, query, args...); err != nil {
-			return nil, errors.Wrapf(err, msg)
-		}
-		return result, nil
-	default:
-		return nil, errors.New("wrong result type")
+	num, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to call RowsAffected")
 	}
+
+	if num == 0 {
+		return errNoRowsAffected
+	}
+
+	return nil
 }
 
-// toSql builds the query into a SQL string and bound args and logs the result.
+// toSql builds the query into a SQL string and bound args, and logs the result.
 func toSql(ctx context.Context, qb interface{}, entity string) (string, []interface{}, string, error) {
 	var (
 		query     string
@@ -101,33 +46,42 @@ func toSql(ctx context.Context, qb interface{}, entity string) (string, []interf
 		codewords string
 		err       error
 	)
+
 	switch qb := qb.(type) {
 	case sq.SelectBuilder:
-		codewords = "selecting "
+		codewords = "select "
 		query, args, err = qb.ToSql()
+
 	case sq.CaseBuilder:
-		codewords = "casing "
+		codewords = "case "
 		query, args, err = qb.ToSql()
+
 	case sq.InsertBuilder:
-		codewords = "inserting "
+		codewords = "insert "
 		query, args, err = qb.ToSql()
+
 	case sq.UpdateBuilder:
-		codewords = "updating "
+		codewords = "update "
 		query, args, err = qb.ToSql()
+
 	case sq.DeleteBuilder:
-		codewords = "deleting "
+		codewords = "delete "
 		query, args, err = qb.ToSql()
+
 	default:
 		err = errors.New("wrong query builder")
 	}
+
 	codewords += entity
 	if err != nil {
-		return "", nil, "", errors.Wrap(err, "creating sql query for "+codewords)
+		return "", nil, "", errors.Wrap(err, "create sql query for "+codewords)
 	}
 
-	logger.FromContext(ctx).WithFields(
-		"query", query,
-		"args", args).
+	log.
+		FromContext(ctx).
+		WithFields(
+			"query", query,
+			"args", args).
 		Debug(codewords)
 
 	return query, args, codewords, nil

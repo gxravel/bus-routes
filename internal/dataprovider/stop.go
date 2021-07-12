@@ -27,27 +27,32 @@ func NewStopFilter() *StopFilter {
 	return &StopFilter{}
 }
 
+// ByIDs filters by stop.id.
 func (f *StopFilter) ByIDs(ids ...int64) *StopFilter {
 	f.IDs = ids
 	return f
 }
 
+// ByCities filters by city.name.
 func (f *StopFilter) ByCities(cities ...string) *StopFilter {
 	f.Cities = cities
 	return f
 }
 
+// ByCitiesIDs filters by stop.city_id.
 func (f *StopFilter) ByCitiesIDs(citiesIDs ...int) *StopFilter {
 	f.CitiesIDs = citiesIDs
 	return f
 }
 
-func (f *StopFilter) PreferIDs() *StopFilter {
-	f.DoPreferIDs = true
+// ByAddresses filters by stop.address.
+func (f *StopFilter) ByAddresses(addresses ...string) *StopFilter {
+	f.Addresses = addresses
 	return f
 }
 
-func (f *StopFilter) ByAddresses(addresses ...string) *StopFilter {
-	f.Addresses = addresses
+// PreferIDs select ids instead of joined values.
+func (f *StopFilter) PreferIDs() *StopFilter {
+	f.DoPreferIDs = true
 	return f
 }

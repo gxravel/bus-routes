@@ -34,11 +34,11 @@ definitions:
       email:
         description: Email пользователя
         type: string
-        example: foo@example.com
+        example: admin@example.com
       password:
         description: Пароль пользователя
         type: string
-        example: my-suPer.$ecr3t
+        example: admin_password
   Bus:
     properties:
       id:
@@ -144,8 +144,6 @@ definitions:
           $ref: "#/definitions/RoutePoint"
 
 tags:
-  - name: internal
-    description: Internal routes
   - name: auth
     description: Authorization routes
   - name: buses
@@ -158,16 +156,6 @@ tags:
     description: All about routes
 
 paths:
-  /internal/health:
-    get:
-      summary: Health
-      tags:
-        - internal
-      responses:
-        "200":
-          description: Success
-        "500":
-          description: Internal Server Error
   /api/v1/auth/signup:
     post:
       summary: Регистрация пользователя
@@ -204,7 +192,6 @@ paths:
           required: true
           schema:
             $ref: "#/definitions/UserLogin"
-            example: { Email: foo@example.com, Password: "my-suPer.$ecr3t" }
       responses:
         "200":
           description: Success

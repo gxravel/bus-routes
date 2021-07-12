@@ -26,21 +26,25 @@ func NewRouteFilter() *RouteFilter {
 	return &RouteFilter{}
 }
 
+// ByBusIDs filters by route.bus_id.
 func (f *RouteFilter) ByBusIDs(ids ...int64) *RouteFilter {
 	f.BusIDs = ids
 	return f
 }
 
+// ByStopIDs filters by route.stop_id.
 func (f *RouteFilter) ByStopIDs(ids ...int64) *RouteFilter {
 	f.StopIDs = ids
 	return f
 }
 
+// BySteps filters by route.step.
 func (f *RouteFilter) BySteps(steps ...int8) *RouteFilter {
 	f.Steps = steps
 	return f
 }
 
+// ViewDetailed select joined values instead of ids.
 func (f *RouteFilter) ViewDetailed() *RouteFilter {
 	f.DetailedView = true
 	return f
