@@ -9,3 +9,23 @@ type Meta struct {
 	CorrID string
 	Mode   uint8
 }
+
+var (
+	MetaDetailedRoutesAccept = &Meta{
+		XName: "x_detailed-routes_accept",
+		XType: "direct",
+		QName: "",
+		Key:   "key_detailed-routes_accept",
+	}
+
+	MetaDetailedRoutesTransmit = &Meta{
+		XName: "x_detailed-routes_transmit",
+		XType: "direct",
+		QName: "",
+		Key:   "key_detailed-routes_transmit",
+	}
+
+	MetaDetailedRoutesRPC = &Meta{
+		QName: "q_detailed-routes_rpc",
+	}
+)
