@@ -24,7 +24,7 @@ func NewServer(
 	logger log.Logger,
 ) (*Server, error) {
 
-	broker, err := rmq.NewClient(cfg.RabbitMQ, logger)
+	broker, err := rmq.NewClient(cfg.RabbitMQ.URL, logger)
 	if err != nil {
 		logger.WithErr(err).Fatal("failed to create RabbitMQ client")
 		return nil, err

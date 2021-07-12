@@ -17,8 +17,8 @@ type Client struct {
 }
 
 // Client creates new instance of client with its own connection and channel.
-func NewClient(cfg Config, logger Logger) (*Client, error) {
-	conn, err := amqp.Dial(cfg.URL)
+func NewClient(url string, logger Logger) (*Client, error) {
+	conn, err := amqp.Dial(url)
 	if err != nil {
 		logger.Fatal("failed to connect to RMQ")
 		return nil, err

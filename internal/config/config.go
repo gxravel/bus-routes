@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gxravel/bus-routes/internal/logger"
-	"github.com/gxravel/bus-routes/pkg/rmq"
 
 	"github.com/spf13/viper"
 )
@@ -16,12 +15,12 @@ type Config struct {
 	Environment     string        `mapstructure:"environment"`
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 
-	API      api        `mapstructure:"api"`
-	DB       db         `mapstructure:"db"`
-	Log      log        `mapstructure:"logger"`
-	JWT      jwt        `mapstructure:"jwt"`
-	Storage  storage    `mapstructure:"storage"`
-	RabbitMQ rmq.Config `mapstructure:"rabbitmq"`
+	API      api      `mapstructure:"api"`
+	DB       db       `mapstructure:"db"`
+	Log      log      `mapstructure:"logger"`
+	JWT      jwt      `mapstructure:"jwt"`
+	Storage  storage  `mapstructure:"storage"`
+	RabbitMQ rabbitMQ `mapstructure:"rabbitmq"`
 }
 
 type api struct {
@@ -50,6 +49,10 @@ type jwt struct {
 
 type storage struct {
 	RedisDSN string `mapstructure:"redis_dsn"`
+}
+
+type rabbitMQ struct {
+	URL string `mapstructure:"url"`
 }
 
 var defaults = map[string]interface{}{
