@@ -24,21 +24,21 @@ func NewServer(
 	logger log.Logger,
 ) (*Server, error) {
 
-	rabbit, err := rmq.NewClient(cfg.RabbitMQ, logger)
+	broker, err := rmq.NewClient(cfg.RabbitMQ, logger)
 	if err != nil {
 		logger.WithErr(err).Fatal("failed to create RabbitMQ client")
 		return nil, err
 	}
 
 	srv := &Server{
-		broker:    rabbit,
+		broker:    broker,
 		logger:    logger.WithModule("api:amqp"),
 		busroutes: busroutes,
 	}
 
 	srv.handlers = make([]func(context.Context), 1)
 
-	srv.handlers[0], err = rabbit.ListenRPCForDetailedRoutes(srv.getDetailedRoutes)
+	srv.handlers[0], err = broker.ListenRPCForDetailedRoutes(srv.getDetailedRoutes)
 	if err != nil {
 		return nil, err
 	}
