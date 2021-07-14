@@ -42,13 +42,14 @@ type handlerFunc func(context.Context, *amqp.Delivery) (interface{}, error)
 func (p *Publisher) wrapHandler(
 	meta *Meta,
 	delivery <-chan amqp.Delivery,
+	shouldAcknowledge bool,
 	handler handlerFunc,
 ) func(context.Context) {
 	return func(ctx context.Context) {
 		for {
 			select {
 			case message := <-delivery:
-				go p.processMessage(ctx, meta, &message, handler)
+				go p.processMessage(ctx, meta, &message, shouldAcknowledge, handler)
 
 			case <-ctx.Done():
 				return
@@ -65,7 +66,7 @@ type handlerResult struct {
 
 // processMessage processes incoming message, adding recoverer and timeout,
 // and listening for result to produce data or error.
-func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amqp.Delivery, handler handlerFunc) {
+func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amqp.Delivery, shouldAcknowledge bool, handler handlerFunc) {
 	p.UseFreeChannel()
 	defer p.FreeChannel()
 
@@ -94,9 +95,15 @@ func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amq
 	case result := <-ch:
 		if result.Err != nil {
 			p.ProduceError(ctx, meta, result.Err)
-			return
+		} else {
+			p.ProduceData(ctx, meta, result.Data)
 		}
-		p.ProduceData(ctx, meta, result.Data)
+
+		if shouldAcknowledge {
+			if err := message.Ack(false); err != nil {
+				p.logger.Fatal("could not acknowledge a delivery")
+			}
+		}
 	}
 }
 

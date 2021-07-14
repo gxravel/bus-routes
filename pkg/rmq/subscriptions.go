@@ -43,7 +43,7 @@ func (c *Consumer) subscribe(
 		return nil, err
 	}
 
-	return publisher.wrapHandler(metaTransmit, delivery, handler), nil
+	return publisher.wrapHandler(metaTransmit, delivery, false, handler), nil
 }
 
 func (c *Consumer) listenRPC(
@@ -61,5 +61,5 @@ func (c *Consumer) listenRPC(
 		return nil, err
 	}
 
-	return publisher.wrapHandler(meta, delivery, handler), nil
+	return publisher.wrapHandler(meta, delivery, true, handler), nil
 }
