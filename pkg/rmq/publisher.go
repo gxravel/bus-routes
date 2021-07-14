@@ -11,8 +11,8 @@ type Publisher struct {
 }
 
 // NewPublisher creates new instance of publisher with its own connection and channels.
-func NewPublisher(url string, logger Logger, maxChannels int) (*Publisher, error) {
-	client, err := newClient(url, logger, maxChannels)
+func NewPublisher(url string, logger Logger, channelsMaxNumber int) (*Publisher, error) {
+	client, err := newClient(url, logger, channelsMaxNumber)
 	if err != nil {
 		return nil, err
 	}

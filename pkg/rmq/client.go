@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	defaultContentType  = "application/json"
-	maxNumberOfChannels = 30
+	defaultContentType       = "application/json"
+	maxChannelsMaxNumber     = 30
+	defaultChannelsMaxNumber = 4
 )
 
 // client wraps connection and channel of amqp.
@@ -15,25 +16,31 @@ type client struct {
 	ch     *amqp.Channel
 	logger Logger
 
-	channels    chan *amqp.Channel
-	maxChannels int
+	channels          chan *amqp.Channel
+	channelsMaxNumber int
 }
 
 // newClient creates new instance of client with its own connection.
-func newClient(url string, logger Logger, maxChannels int) (*client, error) {
+func newClient(url string, logger Logger, channelsMaxNumber int) (*client, error) {
 	conn, err := amqp.Dial(url)
 	if err != nil {
 		logger.Fatal("failed to connect to RMQ")
 		return nil, err
 	}
 
-	c := &client{
-		conn:        conn,
-		logger:      logger,
-		maxChannels: maxChannels,
+	if channelsMaxNumber > maxChannelsMaxNumber {
+		channelsMaxNumber = maxChannelsMaxNumber
+	} else if channelsMaxNumber < 1 {
+		channelsMaxNumber = defaultChannelsMaxNumber
 	}
 
-	c.channels = make(chan *amqp.Channel, maxChannels)
+	c := &client{
+		conn:              conn,
+		logger:            logger,
+		channelsMaxNumber: channelsMaxNumber,
+	}
+
+	c.channels = make(chan *amqp.Channel, channelsMaxNumber)
 
 	if err := c.newChannels(1); err != nil {
 		return nil, err
@@ -44,10 +51,8 @@ func newClient(url string, logger Logger, maxChannels int) (*client, error) {
 
 // newChannels creates new channels for the connection.
 func (c *client) newChannels(count int) error {
-	if count > maxNumberOfChannels {
-		count = maxNumberOfChannels
-	} else if count < 1 {
-		count = 1
+	if len(c.channels)+count > c.channelsMaxNumber {
+		count = c.channelsMaxNumber - len(c.channels)
 	}
 
 	for i := 0; i < count; i++ {
@@ -69,7 +74,7 @@ func (c *client) UseFreeChannel() {
 	case ch := <-c.channels:
 		c.useChannel(ch)
 	default:
-		if cap(c.channels) < c.maxChannels {
+		if cap(c.channels) < c.channelsMaxNumber {
 			if err := c.newChannels(1); err != nil {
 				c.logger.Fatalf(err.Error(), "could not create new channel")
 			}

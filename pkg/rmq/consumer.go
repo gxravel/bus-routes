@@ -8,8 +8,8 @@ type Consumer struct {
 }
 
 // NewConsumer creates new instance of consumer with its own connection and channels.
-func NewConsumer(url string, logger Logger, maxChannels int) (*Consumer, error) {
-	client, err := newClient(url, logger, maxChannels)
+func NewConsumer(url string, logger Logger, channelsMaxNumber int) (*Consumer, error) {
+	client, err := newClient(url, logger, channelsMaxNumber)
 	if err != nil {
 		return nil, err
 	}
