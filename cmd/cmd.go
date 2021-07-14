@@ -21,6 +21,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const (
+	defaultChannelsMaxNumber = 4
+)
+
 func main() {
 	defaultLogger := log.Default()
 
@@ -82,7 +86,7 @@ func main() {
 		jwt.New(storage, *cfg),
 	)
 
-	publisher, err := rmq.NewPublisher(cfg.RabbitMQ.URL, logger)
+	publisher, err := rmq.NewPublisher(cfg.RabbitMQ.URL, logger, defaultChannelsMaxNumber)
 	if err != nil {
 		logger.WithErr(err).Fatal("failed to create a publisher RabbitMQ client")
 	}
@@ -93,7 +97,7 @@ func main() {
 		}
 	}()
 
-	consumer, err := rmq.NewConsumer(cfg.RabbitMQ.URL, logger)
+	consumer, err := rmq.NewConsumer(cfg.RabbitMQ.URL, logger, defaultChannelsMaxNumber)
 	if err != nil {
 		logger.WithErr(err).Fatal("failed to create a consumer RabbitMQ client")
 	}

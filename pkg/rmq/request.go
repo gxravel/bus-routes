@@ -66,6 +66,9 @@ type handlerResult struct {
 // processMessage processes incoming message, adding recoverer and timeout,
 // and listening for result to produce data or error.
 func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amqp.Delivery, handler handlerFunc) {
+	p.UseFreeChannel()
+	defer p.FreeChannel()
+
 	defer p.recover(meta)
 
 	meta.CorrID = message.CorrelationId

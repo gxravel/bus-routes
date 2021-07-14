@@ -10,9 +10,9 @@ type Publisher struct {
 	*client
 }
 
-// NewPublisher creates new instance of piblisher with its own connection and channel.
-func NewPublisher(url string, logger Logger) (*Publisher, error) {
-	client, err := newClient(url, logger)
+// NewPublisher creates new instance of publisher with its own connection and channels.
+func NewPublisher(url string, logger Logger, maxChannels int) (*Publisher, error) {
+	client, err := newClient(url, logger, maxChannels)
 	if err != nil {
 		return nil, err
 	}

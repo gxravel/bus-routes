@@ -2,9 +2,8 @@ module github.com/gxravel/bus-routes
 
 go 1.16
 
-<<<<<<< HEAD
 require github.com/streadway/amqp v1.0.0
-=======
+
 require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -20,13 +19,7 @@ require (
 	github.com/rs/zerolog v1.23.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.8.1
-	github.com/streadway/amqp v1.0.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 )
 
-<<<<<<< HEAD
-replace github.com/gxravel/bus-routes/pkg/rmq v0.0.0 => ../bus-routes/pkg/rmq
->>>>>>> 301fe6e (feat(amqp): support amqp)
-=======
 replace github.com/gxravel/bus-routes/pkg/rmq v0.0.0 => ./pkg/rmq
->>>>>>> 029079c (fiix(rmq): set package rmq)
