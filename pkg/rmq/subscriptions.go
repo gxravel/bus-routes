@@ -32,8 +32,8 @@ func (c *Consumer) subscribe(
 	handler handlerFunc,
 	publisher *Publisher,
 ) (func(context.Context), error) {
-	c.logger.Infof("meta to accept: %v", metaAccept)
-	c.logger.Infof("meta to transmit: %v", metaTransmit)
+	c.logger.Infof("meta to accept: %v", *metaAccept)
+	c.logger.Infof("meta to transmit: %v", *metaTransmit)
 
 	c.UseFreeChannel()
 	defer c.FreeChannel()
@@ -51,12 +51,12 @@ func (c *Consumer) listenRPC(
 	handler handlerFunc,
 	publisher *Publisher,
 ) (func(context.Context), error) {
-	c.logger.Infof("meta: %v", meta)
+	c.logger.Infof("meta: %v", *meta)
 
 	c.UseFreeChannel()
 	defer c.FreeChannel()
 
-	delivery, err := c.WorkOnTask(meta.Key, 0)
+	delivery, err := c.WorkOnTask(meta.Key, meta.PrefetchCount)
 	if err != nil {
 		return nil, err
 	}
