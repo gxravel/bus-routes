@@ -33,7 +33,7 @@ func (c *Consumer) WorkOnTask(qname string, prefetchCount int) (<-chan amqp.Deli
 		return nil, err
 	}
 
-	return c.consume(q.Name, true, false)
+	return c.consume(q.Name, false, false)
 }
 
 // Subscribe subscribes for a messages from the exchange.

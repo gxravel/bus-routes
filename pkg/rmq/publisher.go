@@ -22,7 +22,7 @@ func NewPublisher(url string, logger Logger, channelsMaxNumber int) (*Publisher,
 
 // NewTask produces message to a named queue.
 func (p *Publisher) NewTask(qname string, body []byte) error {
-	q, err := p.declareQueue(qname, false, false)
+	q, err := p.declareQueue(qname, true, false)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (p *Publisher) Publish(meta *Meta, body []byte) error {
 // CallRPC produces a message to a nammed queue, pre-installing ReplyTo property,
 // which it expects to consume from.
 func (p *Publisher) CallRPC(meta *Meta, body []byte) error {
-	q, err := p.declareQueue("", false, false)
+	q, err := p.declareQueue("", false, true)
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,7 @@ func (p *Publisher) produceJSON(ctx context.Context, meta *Meta, data interface{
 	}
 
 	if err := p.produce(meta, body); err != nil {
-		p.logger.Error("failed to publish message")
+		p.logger.Fatalf(err.Error(), "failed to publish message")
 	}
 }
 
