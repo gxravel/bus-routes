@@ -53,10 +53,6 @@ func (p *Publisher) CallRPC(meta *Meta, body []byte) error {
 	return p.produce(meta, body)
 }
 
-func (c *Publisher) Close() error {
-	return c.conn.Close()
-}
-
 func (c *client) produce(meta *Meta, body []byte) error {
 	pub := amqp.Publishing{
 		DeliveryMode:  meta.Mode,

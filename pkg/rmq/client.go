@@ -155,3 +155,7 @@ func (c *client) setQos(prefetchCount int, prefetchSize int) error {
 
 	return nil
 }
+
+func (c *client) Close() error {
+	return c.conn.Close()
+}

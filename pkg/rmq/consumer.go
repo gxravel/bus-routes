@@ -54,10 +54,6 @@ func (c *Consumer) Subscribe(meta *Meta) (<-chan amqp.Delivery, error) {
 	return c.consume(q.Name, true, false)
 }
 
-func (c *Consumer) Close() error {
-	return c.conn.Close()
-}
-
 func (c *Consumer) consume(qname string, autoAck bool, exclusive bool) (<-chan amqp.Delivery, error) {
 	delivery, err := c.ch.Consume(
 		qname,     // queue
