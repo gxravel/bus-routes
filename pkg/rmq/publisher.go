@@ -1,13 +1,13 @@
 package rmq
 
 import (
-	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 )
 
 // Publisher implements the publisher methods.
 type Publisher struct {
 	*client
+	ch *channel
 }
 
 // NewPublisher creates new instance of publisher with its own connection and channels.
@@ -20,40 +20,43 @@ func NewPublisher(url string, logger Logger, channelsMaxNumber int) (*Publisher,
 	return &Publisher{client: client}, nil
 }
 
-// NewTask produces message to a named queue.
+// withChannel creates Publisher with channel.
+func (p *Publisher) withChannel(ch *channel) *Publisher {
+	return &Publisher{
+		client: p.client,
+		ch:     ch,
+	}
+}
+
+// WithFreeChannel returns Publisher with channel and function to free the channel.
+func (p *Publisher) WithFreeChannel() (*Publisher, func()) {
+	ch := p.useFreeChannel()
+
+	return p.withChannel(ch),
+		func() { p.freeChannel(ch) }
+}
+
+// NewTask produces a message to a named queue.
 func (p *Publisher) NewTask(qname string, body []byte) error {
-	q, err := p.declareQueue(qname, true, false)
+	q, err := p.ch.declareQueue(qname, true)
 	if err != nil {
 		return err
 	}
 
-	return p.produce(&Meta{QName: q.Name, Mode: amqp.Persistent}, body)
+	return p.Produce(&Meta{QName: q.Name, Mode: amqp.Persistent}, body)
 }
 
 // Publish publishes a message to the exchange.
 func (p *Publisher) Publish(meta *Meta, body []byte) error {
-	if err := p.declareExchange(meta.XName, meta.XType, true); err != nil {
+	if err := p.ch.declareExchange(meta.XName, meta.XType, true); err != nil {
 		return err
 	}
 
-	return p.produce(meta, body)
+	return p.Produce(meta, body)
 }
 
-// CallRPC produces a message to a nammed queue, pre-installing ReplyTo property,
-// which it expects to consume from.
-func (p *Publisher) CallRPC(meta *Meta, body []byte) error {
-	q, err := p.declareQueue("", false, true)
-	if err != nil {
-		return err
-	}
-
-	meta.QName = q.Name
-	meta.CorrID = uuid.New().String()
-
-	return p.produce(meta, body)
-}
-
-func (c *client) produce(meta *Meta, body []byte) error {
+// Produce produces a message.
+func (p *Publisher) Produce(meta *Meta, body []byte) error {
 	pub := amqp.Publishing{
 		DeliveryMode:  meta.Mode,
 		ContentType:   defaultContentType,
@@ -62,14 +65,14 @@ func (c *client) produce(meta *Meta, body []byte) error {
 		Body:          body,
 	}
 
-	if err := c.ch.Publish(
+	if err := p.ch.Publish(
 		meta.XName, // exchange
 		meta.Key,   // routing key
 		false,      // mandatory
 		false,      // immediate
 		pub,
 	); err != nil {
-		c.logger.Error("failed to produce a message")
+		p.logger.Error("failed to produce a message")
 		return err
 	}
 

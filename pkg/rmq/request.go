@@ -65,12 +65,12 @@ type handlerResult struct {
 }
 
 // processMessage processes incoming message, adding recoverer and timeout,
-// and listening for result to produce data or error.
+// and listening for result to produce data or an error.
 func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amqp.Delivery, shouldAcknowledge bool, handler handlerFunc) {
-	p.UseFreeChannel()
-	defer p.FreeChannel()
+	pub, free := p.WithFreeChannel()
+	defer free()
 
-	defer p.recover(meta)
+	defer pub.recover(meta)
 
 	meta.CorrID = message.CorrelationId
 	if message.ReplyTo != "" {
@@ -80,28 +80,28 @@ func (p *Publisher) processMessage(ctx context.Context, meta *Meta, message *amq
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 
-	ch := make(chan *handlerResult)
+	rch := make(chan *handlerResult)
 
 	go func() {
 		data, err := handler(ctx, message)
-		ch <- &handlerResult{Data: data, Err: err}
+		rch <- &handlerResult{Data: data, Err: err}
 	}()
 
 	select {
 	case <-ctx.Done():
-		p.ProduceError(ctx, meta, errors.New("request canceled"))
+		pub.ProduceError(ctx, meta, errors.New("request canceled"))
 		return
 
-	case result := <-ch:
+	case result := <-rch:
 		if result.Err != nil {
-			p.ProduceError(ctx, meta, result.Err)
+			pub.ProduceError(ctx, meta, result.Err)
 		} else {
-			p.ProduceData(ctx, meta, result.Data)
+			pub.ProduceData(ctx, meta, result.Data)
 		}
 
 		if shouldAcknowledge {
 			if err := message.Ack(false); err != nil {
-				p.logger.Fatal("could not acknowledge a delivery")
+				pub.logger.Fatal("could not acknowledge a delivery")
 			}
 		}
 	}
@@ -112,7 +112,7 @@ func (p *Publisher) recover(meta *Meta) {
 		p.logger.Errorf("panic: %v", err)
 		debug.PrintStack()
 
-		if perr := p.produce(meta, internalErrBody); perr != nil {
+		if perr := p.Produce(meta, internalErrBody); perr != nil {
 			p.logger.Error("failed to produce internal error body while recovering")
 		}
 	}

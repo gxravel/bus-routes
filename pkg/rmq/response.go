@@ -11,13 +11,14 @@ import (
 
 // produceJSON produces a message in format of JSON.
 func (p *Publisher) produceJSON(ctx context.Context, meta *Meta, data interface{}) {
-	p.logger.Debugf("sending data: %v", data)
+	p.logger.Debugf("send data: %v", data)
+
 	body, err := ConvertToMessage(data)
 	if err != nil {
 		return
 	}
 
-	if err := p.produce(meta, body); err != nil {
+	if err := p.Produce(meta, body); err != nil {
 		p.logger.Fatalf(err.Error(), "failed to publish message")
 	}
 }
