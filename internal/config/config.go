@@ -15,11 +15,12 @@ type Config struct {
 	Environment     string        `mapstructure:"environment"`
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 
-	API     api     `mapstructure:"api"`
-	DB      db      `mapstructure:"db"`
-	Log     log     `mapstructure:"logger"`
-	JWT     jwt     `mapstructure:"jwt"`
-	Storage storage `mapstructure:"storage"`
+	API      api      `mapstructure:"api"`
+	DB       db       `mapstructure:"db"`
+	Log      log      `mapstructure:"logger"`
+	JWT      jwt      `mapstructure:"jwt"`
+	Storage  storage  `mapstructure:"storage"`
+	RabbitMQ rabbitMQ `mapstructure:"rabbitmq"`
 }
 
 type api struct {
@@ -50,17 +51,21 @@ type storage struct {
 	RedisDSN string `mapstructure:"redis_dsn"`
 }
 
+type rabbitMQ struct {
+	URL string `mapstructure:"url"`
+}
+
 var defaults = map[string]interface{}{
 	"environment":      "development",
 	"shutdown_timeout": time.Second * 5,
 
-	"db.url":            "gxravel:gxravel@tcp(localhost:3308)",
+	"db.url":            "user:user@tcp(localhost:3306)",
 	"db.schema_name":    "bus_routes",
 	"db.max_open_conns": 2,
 	"db.max_idle_conns": 2,
 
 	"api.serve_swagger": true,
-	"api.address":       ":8090",
+	"api.address":       ":4010",
 	"api.read_timeout":  time.Second * 5,
 	"api.write_timeout": time.Second * 5,
 
@@ -68,9 +73,15 @@ var defaults = map[string]interface{}{
 	"logger.format": "json",
 
 	"jwt.access_key":    "jwt_access_very_strong_key",
-	"jwt.access_expiry": time.Minute * 15,
+	"jwt.access_expiry": time.Hour * 2,
 
 	"storage.redis_dsn": "localhost:6378",
+
+	"remote_services.default_timeout":   time.Second * 30,
+	"remote_services.default_max_conns": 64,
+	"remote_services.skip_tls_verify":   false,
+
+	"rabbitmq.url": "amqp://guest:guest@localhost:5672/",
 }
 
 func New(dst string) (*Config, error) {

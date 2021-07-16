@@ -1,5 +1,5 @@
 environment: {{ config.environment }} # production|development
-shutdown_timeout: {{ config.shutdown_timeout }} # default: 10s
+shutdown_timeout: {{ config.shutdown_timeout }} # default: 5s
 
 logger:
     level: {{ config.logger.level }} # default: info
@@ -9,18 +9,26 @@ db:
     url: {{ config.db.url }}
     schema_name: {{ config.db.schema_name }}
     max_open_conns: {{ config.db.max_open_conns }} # default: 2
-    max_idle_conns: {{ config.db.max_idle_conns }} # default: 10
+    max_idle_conns: {{ config.db.max_idle_conns }} # default: 2
 
 api:
-    serve_swagger: {{ config.api.serve_swagger }} # default: false
+    serve_swagger: {{ config.api.serve_swagger }} # default: true
     # serve /version
-    address: {{ config.api.address }} # default: ":4000"
+    address: {{ config.api.address }} # default: ":4010"
     read_timeout: {{ config.api.read_timeout }} # default: 5s
     write_timeout: {{ config.api.write_timeout }} # default: 5s
 
 jwt:
     access_key: {{ config.jwt.access_key }} # default: jwt_access_very_strong_key
-    access_expiry: {{ config.jwt.access_expiry }} # default: 15m
+    access_expiry: {{ config.jwt.access_expiry }} # default: 2h
 
 storage:
     redis_dsn: {{ config.storage.redis_dsn }} # default: localhost: 6378
+
+remote_services:
+    default_timeout: {{ config.remote_services.default_timeout }} # default: 30s
+    default_max_conns: {{ config.remote_services.default_max_conns }} # default: 64
+    skip_tls_verify: {{ config.remote_services.skip_tls_verify }} # turn off tls verification. default: false
+
+rabbitmq:
+    url: {{ config.rabbitmq.url }} # default amqp://guest:guest@localhost:5672/

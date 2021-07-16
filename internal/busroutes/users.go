@@ -28,7 +28,7 @@ func checkPasswordHash(password string, hashedPassword []byte) error {
 	return nil
 }
 
-func (r *BusRoutes) GetUsers(ctx context.Context, filter *dataprovider.UserFilter) ([]*httpv1.User, error) {
+func (r *Busroutes) GetUsers(ctx context.Context, filter *dataprovider.UserFilter) ([]*httpv1.User, error) {
 	dbUsers, err := r.userStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (r *BusRoutes) GetUsers(ctx context.Context, filter *dataprovider.UserFilte
 	return toV1Users(dbUsers...), nil
 }
 
-func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filter *dataprovider.UserFilter) error {
+func (r *Busroutes) CheckPasswordHash(ctx context.Context, password string, filter *dataprovider.UserFilter) error {
 	dbUser, err := r.userStore.GetByFilter(ctx, filter)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (r *BusRoutes) CheckPasswordHash(ctx context.Context, password string, filt
 	return checkPasswordHash(password, dbUser.HashedPassword)
 }
 
-func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
+func (r *Busroutes) GetUserType(ctx context.Context, filter *dataprovider.UserFilter) (model.UserType, error) {
 	dbUser, err := r.userStore.GetByFilter(ctx, filter)
 	if err != nil {
 		return "", err
@@ -61,7 +61,7 @@ func (r *BusRoutes) GetUserType(ctx context.Context, filter *dataprovider.UserFi
 	return dbUser.Type, nil
 }
 
-func (r *BusRoutes) AddUsers(ctx context.Context, users ...*httpv1.User) (int64, error) {
+func (r *Busroutes) AddUsers(ctx context.Context, users ...*httpv1.User) (int64, error) {
 	id, err := r.userStore.Add(ctx, toDBUsers(ctx, users...)...)
 	if err != nil {
 		err = ierr.CheckDuplicate(err, "email")
@@ -71,15 +71,15 @@ func (r *BusRoutes) AddUsers(ctx context.Context, users ...*httpv1.User) (int64,
 	return id, nil
 }
 
-func (r *BusRoutes) UpdateUser(ctx context.Context, user *httpv1.User) error {
+func (r *Busroutes) UpdateUser(ctx context.Context, user *httpv1.User) error {
 	return r.userStore.Update(ctx, toDBUsers(ctx, user)[0])
 }
 
-func (r *BusRoutes) UpdateUserPassword(ctx context.Context, hashedPassword []byte, filter *dataprovider.UserFilter) error {
+func (r *Busroutes) UpdateUserPassword(ctx context.Context, hashedPassword []byte, filter *dataprovider.UserFilter) error {
 	return r.userStore.UpdatePassword(ctx, hashedPassword, filter)
 }
 
-func (r *BusRoutes) DeleteUser(ctx context.Context, filter *dataprovider.UserFilter) error {
+func (r *Busroutes) DeleteUser(ctx context.Context, filter *dataprovider.UserFilter) error {
 	return r.userStore.Delete(ctx, filter)
 }
 

@@ -8,7 +8,7 @@ import (
 	log "github.com/gxravel/bus-routes/internal/logger"
 )
 
-type BusRoutes struct {
+type Busroutes struct {
 	config       *config.Config
 	db           *database.Client
 	logger       log.Logger
@@ -32,8 +32,8 @@ func New(
 	userStore dataprovider.UserStore,
 	txer dataprovider.Txer,
 	jwtManager jwt.Manager,
-) *BusRoutes {
-	return &BusRoutes{
+) *Busroutes {
+	return &Busroutes{
 		config:       config,
 		db:           db,
 		logger:       logger,

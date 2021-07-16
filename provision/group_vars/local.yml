@@ -19,8 +19,16 @@ config:
     write_timeout: 5s
 
   jwt:
-    access_key: jwt_access_very_strong_key
-    access_expiry: 8h
+    access_key: uuYiZONzjPILoDJZ6cFWs8vF1XEnveFDgNHzBVysQfPx+Cza3P*JhMSp}tzzZzM5
+    access_expiry: 2h
 
   storage:
     redis_dsn: localhost:6378
+
+  remote_services:
+    default_timeout: 30s
+    default_max_conns: 64
+    skip_tls_verify: true
+
+  rabbitmq:
+    url: amqp://guest:guest@localhost:5672/

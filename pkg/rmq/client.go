@@ -1,108 +1,166 @@
-package rabbitmq
+package rmq
 
 import (
+	"sync"
+
 	"github.com/streadway/amqp"
 )
 
-type MessageBroker interface {
-	Produce(x string, key string, body []byte) error
-	Consume(qname string) (<-chan amqp.Delivery, error)
-	DeclareQueue(name string) (amqp.Queue, error)
-	DeclareExchange(name string, xType string) error
-}
+const (
+	defaultContentType       = "application/json"
+	maxChannelsMaxNumber     = 30
+	defaultChannelsMaxNumber = 4
+)
 
-type Client struct {
+// client wraps amqp connection and implements the methods to handle channels.
+type client struct {
 	conn   *amqp.Connection
-	ch     *amqp.Channel
 	logger Logger
+
+	channels          chan *channel
+	channelsMaxNumber int
+
+	chm                   sync.Mutex
+	channelsCurrentNumber int
 }
 
-func NewClient(cfg Config, logger Logger) (MessageBroker, error) {
-	conn, err := amqp.Dial(cfg.URL)
+// newClient creates new instance of client and adds one channel.
+func newClient(url string, logger Logger, channelsMaxNumber int) (*client, error) {
+	conn, err := amqp.Dial(url)
 	if err != nil {
-		logger.WithErr(err).Fatal("failed to connect to RMQ")
+		logger.Fatal("failed to connect to RMQ")
 		return nil, err
 	}
 
-	ch, err := conn.Channel()
-	if err != nil {
-		logger.WithErr(err).Fatal("failed to open a channel")
+	if channelsMaxNumber > maxChannelsMaxNumber {
+		channelsMaxNumber = maxChannelsMaxNumber
+	} else if channelsMaxNumber < 1 {
+		channelsMaxNumber = defaultChannelsMaxNumber
+	}
+
+	c := &client{
+		conn:              conn,
+		logger:            logger,
+		channelsMaxNumber: channelsMaxNumber,
+	}
+
+	c.channels = make(chan *channel, channelsMaxNumber)
+
+	if err := c.addChannel(); err != nil {
 		return nil, err
 	}
 
-	return &Client{
-		conn:   conn,
-		ch:     ch,
-		logger: logger,
-	}, nil
+	return c, nil
 }
 
-func (c *Client) Produce(x string, key string, body []byte) error {
-	if err := c.ch.Publish(
-		x,     // exchange
-		key,   // routing key
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        body,
-		},
-	); err != nil {
-		c.logger.WithErr(err).Error("failed to publish a message")
+// addChannel creates new channel for the connection
+// and adds it to the channels.
+func (c *client) addChannel() error {
+	ch, err := c.conn.Channel()
+	if err != nil {
+		c.logger.Fatal("failed to open a channel")
 		return err
 	}
 
+	c.channels <- &channel{ch}
+	c.channelsCurrentNumber += 1
+
 	return nil
 }
-func (c *Client) Consume(qname string) (<-chan amqp.Delivery, error) {
-	msgs, err := c.ch.Consume(
-		qname, // queue
-		"",    // consumer
-		true,  // auto ack
-		false, // exclusive
-		false, // no local
-		false, // no wait
-		nil,   // args
-	)
-	if err != nil {
-		c.logger.WithErr(err).Error("failed to subsribe")
-		return nil, err
+
+// useFreeChannel returns currently available channel.
+// If possible it creates new one.
+func (c *client) useFreeChannel() *channel {
+	for {
+		select {
+		case ch := <-c.channels:
+			return ch
+
+		default:
+			c.chm.Lock()
+			if c.channelsCurrentNumber < c.channelsMaxNumber {
+				if err := c.addChannel(); err != nil {
+					c.logger.Fatalf(err.Error(), "could not create new channel")
+				}
+			}
+			c.chm.Unlock()
+		}
 	}
-
-	return msgs, err
-}
-func (c *Client) Close() error {
-	return c.ch.Close()
 }
 
-func (c *Client) DeclareQueue(name string) (amqp.Queue, error) {
-	q, err := c.ch.QueueDeclare(
-		name,  // name
-		true,  // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
+// freeChannel frees the current channel so it can be used by others.
+func (c *client) freeChannel(ch *channel) {
+	if ch.Channel != nil {
+		c.channels <- ch
+	} else {
+		c.chm.Lock()
+		c.channelsCurrentNumber -= 1
+		c.chm.Unlock()
+	}
+}
+
+func (c *client) Close() error {
+	return c.conn.Close()
+}
+
+type channel struct {
+	*amqp.Channel
+}
+
+func (ch *channel) declareQueue(name string, durable bool) (amqp.Queue, error) {
+	var exclusive = name == ""
+
+	q, err := ch.QueueDeclare(
+		name,
+		durable,
+		false,     // delete when unused
+		exclusive, // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
-		c.logger.WithErr(err).Error("failed to declare exchange")
 		return q, err
 	}
 
 	return q, nil
 }
 
-func (c *Client) DeclareExchange(name string, xType string) error {
-	if err := c.ch.ExchangeDeclare(
-		name,  // name
-		xType, // type
-		true,  // durable
+func (ch *channel) bindQueue(meta *Meta) error {
+	if err := ch.QueueBind(
+		meta.QName,
+		meta.Key, // routing key
+		meta.XName,
+		false,
+		nil,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ch *channel) declareExchange(name string, xtype string, durable bool) error {
+	if err := ch.ExchangeDeclare(
+		name,
+		xtype,
+		durable,
 		false, // auto-deleted
 		false, // internal
 		false, // no-wait
 		nil,   // arguments
 	); err != nil {
-		c.logger.WithErr(err).Error("failed to declare exchange")
+		return err
+	}
+
+	return nil
+}
+
+func (ch *channel) setQos(prefetchCount int, prefetchSize int) error {
+	if err := ch.Qos(
+		prefetchCount,
+		prefetchSize,
+		false, // global
+	); err != nil {
 		return err
 	}
 

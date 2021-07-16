@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	amqp "github.com/gxravel/bus-routes/internal/api/amqp/handler"
 	"github.com/gxravel/bus-routes/internal/api/http/handler"
 	"github.com/gxravel/bus-routes/internal/busroutes"
 	"github.com/gxravel/bus-routes/internal/config"
@@ -15,8 +16,13 @@ import (
 	"github.com/gxravel/bus-routes/internal/jwt"
 	log "github.com/gxravel/bus-routes/internal/logger"
 	"github.com/gxravel/bus-routes/internal/storage"
+	"github.com/gxravel/bus-routes/pkg/rmq"
 
 	_ "github.com/go-sql-driver/mysql"
+)
+
+const (
+	defaultChannelsMaxNumber = 4
 )
 
 func main() {
@@ -79,6 +85,39 @@ func main() {
 		txer,
 		jwt.New(storage, *cfg),
 	)
+
+	publisher, err := rmq.NewPublisher(cfg.RabbitMQ.URL, logger, defaultChannelsMaxNumber)
+	if err != nil {
+		logger.WithErr(err).Fatal("failed to create a publisher RabbitMQ client")
+	}
+
+	defer func() {
+		if err := publisher.Close(); err != nil {
+			logger.WithErr(err).Error("failed to close publisher RabbitMQ connection")
+		}
+	}()
+
+	consumer, err := rmq.NewConsumer(cfg.RabbitMQ.URL, logger, defaultChannelsMaxNumber)
+	if err != nil {
+		logger.WithErr(err).Fatal("failed to create a consumer RabbitMQ client")
+	}
+
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			logger.WithErr(err).Error("failed to close consumer RabbitMQ connection")
+		}
+	}()
+
+	amqpServer, err := amqp.NewServer(
+		*cfg,
+		publisher,
+		consumer,
+		busroutes,
+		logger,
+	)
+	if err != nil {
+		logger.WithErr(err).Fatal("failed to create amqp Server")
+	}
 
 	apiServer := handler.NewServer(
 		cfg,

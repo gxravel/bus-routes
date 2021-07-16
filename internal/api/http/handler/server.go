@@ -17,12 +17,12 @@ import (
 type Server struct {
 	*http.Server
 	logger    log.Logger
-	busroutes *busroutes.BusRoutes
+	busroutes *busroutes.Busroutes
 }
 
 func NewServer(
 	cfg *config.Config,
-	busroutes *busroutes.BusRoutes,
+	busroutes *busroutes.Busroutes,
 	logger log.Logger,
 ) *Server {
 	srv := &Server{

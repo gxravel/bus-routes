@@ -1,4 +1,4 @@
-package rabbitmq
+package rmq
 
 type Logger interface {
 	Debugf(format string, data ...interface{})
@@ -12,10 +12,4 @@ type Logger interface {
 	Warn(msg string)
 	Error(msg string)
 	Fatal(msg string)
-
-	WithField(name string, value interface{}) Logger
-	WithFields(pairs ...interface{}) Logger
-
-	WithErr(err error) Logger
-	WithStr(key string, val string) Logger
 }

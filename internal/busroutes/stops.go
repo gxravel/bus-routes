@@ -8,7 +8,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
-func (r *BusRoutes) GetStops(ctx context.Context, filter *dataprovider.StopFilter) ([]*httpv1.Stop, error) {
+func (r *Busroutes) GetStops(ctx context.Context, filter *dataprovider.StopFilter) ([]*httpv1.Stop, error) {
 	dbStops, err := r.stopStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -17,15 +17,15 @@ func (r *BusRoutes) GetStops(ctx context.Context, filter *dataprovider.StopFilte
 	return toV1Stops(dbStops...), nil
 }
 
-func (r *BusRoutes) AddStops(ctx context.Context, stops ...*httpv1.Stop) error {
+func (r *Busroutes) AddStops(ctx context.Context, stops ...*httpv1.Stop) error {
 	return r.stopStore.Add(ctx, toDBStops(stops...)...)
 }
 
-func (r *BusRoutes) UpdateStops(ctx context.Context, stop *httpv1.Stop) error {
+func (r *Busroutes) UpdateStops(ctx context.Context, stop *httpv1.Stop) error {
 	return r.stopStore.Update(ctx, toDBStops(stop)[0])
 }
 
-func (r *BusRoutes) DeleteStop(ctx context.Context, filter *dataprovider.StopFilter) error {
+func (r *Busroutes) DeleteStop(ctx context.Context, filter *dataprovider.StopFilter) error {
 	return r.stopStore.Delete(ctx, filter)
 }
 

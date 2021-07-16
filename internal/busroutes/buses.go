@@ -8,7 +8,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
-func (r *BusRoutes) GetBuses(ctx context.Context, filter *dataprovider.BusFilter) ([]*httpv1.Bus, error) {
+func (r *Busroutes) GetBuses(ctx context.Context, filter *dataprovider.BusFilter) ([]*httpv1.Bus, error) {
 	dbBuses, err := r.busStore.GetListByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -17,7 +17,7 @@ func (r *BusRoutes) GetBuses(ctx context.Context, filter *dataprovider.BusFilter
 	return toV1Buses(dbBuses...), nil
 }
 
-func (r *BusRoutes) AddBuses(ctx context.Context, buses ...*httpv1.Bus) error {
+func (r *Busroutes) AddBuses(ctx context.Context, buses ...*httpv1.Bus) error {
 	return r.busStore.Add(ctx, toDBBuses(buses...)...)
 }
 

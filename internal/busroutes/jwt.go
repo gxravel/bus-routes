@@ -10,7 +10,7 @@ import (
 	"github.com/gxravel/bus-routes/internal/model"
 )
 
-func (r *BusRoutes) NewJWT(ctx context.Context, user *httpv1.User) (*httpv1.Token, error) {
+func (r *Busroutes) NewJWT(ctx context.Context, user *httpv1.User) (*httpv1.Token, error) {
 	jwtUser := &jwt.User{
 		ID:    user.ID,
 		Email: user.Email,
@@ -27,7 +27,7 @@ func (r *BusRoutes) NewJWT(ctx context.Context, user *httpv1.User) (*httpv1.Toke
 }
 
 // GetUserByToken returns user withdrawn from the JWT token claims, unless it is of not allowed type.
-func (r *BusRoutes) GetUserByToken(ctx context.Context, token string, allowedTypes ...model.UserType) (*httpv1.User, error) {
+func (r *Busroutes) GetUserByToken(ctx context.Context, token string, allowedTypes ...model.UserType) (*httpv1.User, error) {
 	logger := log.FromContext(ctx).WithStr("token", token)
 
 	if token == "" {
